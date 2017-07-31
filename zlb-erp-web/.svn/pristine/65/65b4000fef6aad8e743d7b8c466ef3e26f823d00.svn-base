@@ -1,0 +1,8 @@
+#yes:相同帐号可以同时登录，no:相同帐号不能同时登录
+login.same.user=yes
+#sftp 配置信息
+#sftp.host=192.168.16.49
+sftp.host=120.132.117.155
+sftp.port=22
+sftp.username=root
+sftp.password=Zhibo568680~

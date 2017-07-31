@@ -1,0 +1,72 @@
+     <!-- sidebar: style can be found in sidebar.less -->
+     <section class="sidebar">
+         <!-- Sidebar user panel -->
+              <div class="user-panel">
+                  <div class="pull-left image">
+                      <img alt="User Image" class="img-circle" ">
+                  </div>
+                  <div class="pull-left info">
+                      <p>Hello</p>
+
+                      <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+                  </div>
+              </div>
+			<ul class="sidebar-menu">
+				<%-- <c:forEach items="${data }" var="pmenu" varStatus="vs">
+					<shiro:hasPermission name="${pmenu.resourceKey }">
+					<li class="treeview <c:if test="${vs.index eq 0 }">active</c:if>">
+						<a href="#">
+                          <i class="fa ${pmenu.resourceCss }"></i>
+                          <span>${pmenu.resourceName }</span>
+                          <i class="fa fa-angle-left pull-right"></i>
+                      	</a>
+                      	<ul class="treeview-menu">
+						<c:forEach items="${pmenu.children }" var="smenu">
+					    	<shiro:hasPermission name="${smenu.resourceKey }">
+							<li><a href="${contextPath}${smenu.resourceUrl }" target="main" class="menu_on"><i class="${smenu.resourceCss }"></i>${smenu.resourceName }</a></li>
+					    	</shiro:hasPermission>
+					    </c:forEach>
+                      	</ul>
+					</li>
+					</shiro:hasPermission>
+				</c:forEach> --%>
+                  <li class="treeview active">
+                      <a href="#">
+                          <i class="fa fa-dashboard""></i>
+                          <span>订单管理</span>
+                          <i class="fa fa-angle-left pull-right"></i>
+                      </a>
+                      <ul class="treeview-menu">
+                          <li><a target="main" href="${contextPath}/demo/init"><i class="fa fa-angle-double-right"></i>销售订单管理</a></li>
+                          <li><a target="main" href="${contextPath}/broadCastLive/list"><i class="fa fa-angle-double-right"></i>退货订单管理</a></li>
+                          <li><a target="main" href="${contextPath}/roomReport/init"><i class="fa fa-angle-double-right"></i>换货订单管理</a></li>
+                          <li><a target="main" href="${contextPath}/sortSet/init"><i class="fa fa-angle-double-right"></i>订单编码规则</a></li>
+                      </ul>
+                  </li>
+                  <li class="treeview">
+                      <a href="#">
+                          <i class="fa fa-th"></i>
+                          <span>商品管理</span>
+                          <i class="fa fa-angle-left pull-right"></i>
+                      </a>
+                      <ul class="treeview-menu">
+                      <li><a target="main" href="${contextPath}/anchorCompanyManage/toanchorcompanymanagelist"><i class="fa fa-angle-double-right"></i>商品资料管理</a></li>
+                      <li><a target="main" href="${contextPath}/anchorCompanyManage/toanchorcompanywaitlist"><i class="fa fa-angle-double-right"></i> 商品分类管理</a></li>
+                      <li><a target="main" href="${contextPath}/anchorCompanyManage/toaddanchorcompany"><i class="fa fa-angle-double-right"></i> 商品属性管理</a></li>
+                      </ul>
+                  </li>
+                  <li class="treeview">
+                      <a href="#">
+                          <i class="fa fa-bar-chart-o"></i>
+                          <span>业务规则设置</span>
+                          <i class="fa fa-angle-left pull-right"></i>
+                      </a>
+                      <ul class="treeview-menu">
+                          <li><a target="main" href="${contextPath}/config/companyConfig/list"><i class="fa fa-angle-double-right"></i> 免审策略配置</a></li>
+                          <li><a target="main" href="${contextPath}/config/broadcastRobotConfig/init"><i class="fa fa-angle-double-right"></i>自动合单策略配置</a></li>
+                          <li><a target="main" href="${contextPath}/config/broadcastRobotConfig/init"><i class="fa fa-angle-double-right"></i>自动拆单策略配置</a></li>
+                      </ul>
+                  </li>
+              </ul>
+              
+    </section>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:reference id="carsServiceImpl" interface="com.zhilianbao.erp.auth.service.cars.ICarsService"/>
+    <dubbo:reference id="baseAreaServiceImpl" interface="com.zhilianbao.erp.auth.service.systemparameter.IBaseAreaService"/>
+    <dubbo:reference id="userService" interface="com.zhilianbao.erp.auth.service.user.IUserService"/>
+    <dubbo:reference id="operatorService" interface="com.zhilianbao.erp.auth.service.operators.IOperatorService"/>
+    
+    <!-- chenll -->
+    <dubbo:reference id="goodsServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsService"/>
+    <dubbo:reference id="goodsTypeServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsTypeService"/>
+    <dubbo:reference id="goodsPropertyServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsPropertyService"/>
+    <dubbo:reference id="goodsTagServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsTagService"/>
+ 	<dubbo:reference id="goodsMaterialServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsMaterialService"/>
+ 	<dubbo:reference id="goodsPropertyListServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsPropertyListService"/>
+ 	<dubbo:reference id="goodsSkuServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsSkuService"/>
+ 	<dubbo:reference id="goodsPriceServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsPriceService"/>
+ 	<dubbo:reference id="goodsStockServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsStockService"/>
+ 	<dubbo:reference id="goodsTagListServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsTagListService"/>
+ 	<dubbo:reference id="goodsMaterialListServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsMaterialListService"/>
+ 	<dubbo:reference id="goodsItemServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsItemService"/>
+ 	<dubbo:reference id="goodsCollectionServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsCollectionService"/>
+ 	<dubbo:reference id="goodsSkuListServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.IGoodsSkuListService"/>
+ 	<dubbo:reference id="codeRuleServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.ICodeRuleService"/>
+ 	<dubbo:reference id="codeRuleItemServiceImpl" interface="com.zhilianbao.erp.auth.service.goods.ICodeRuleItemService"/>
+
+    <!-- kuangzy -->
+    <dubbo:reference id="systemDictServiceImpl" interface="com.zhilianbao.erp.auth.service.parameter.ISystemDictService"/>
+
+    <!-- shilijin -->
+    <dubbo:reference id="roleServiceImpl" interface="com.zhilianbao.erp.auth.service.user.IRoleService"/>
+    <dubbo:reference id="roleMenuListServiceImpl" interface="com.zhilianbao.erp.auth.service.user.IRoleMenuListService"/>
+
+    <dubbo:reference id="systemParamServiceImpl" interface="com.zhilianbao.erp.auth.service.parameter.ISystemParamService"/>
+    <dubbo:reference id="systemCodeRuleServiceImpl" interface="com.zhilianbao.erp.auth.service.parameter.ISystemCodeRuleService"/>
+
+	<dubbo:reference id="deliveryRecordServiceImpl" interface="com.zhilianbao.erp.auth.service.archives.IDeliveryRecordService"/>
+    <dubbo:reference id="deliveryScopeServiceImpl" interface="com.zhilianbao.erp.auth.service.archives.IDeliveryScopeService"/>
+
+</beans>

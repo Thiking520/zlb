@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptWaybill_subreport_goods" language="groovy" pageWidth="283" pageHeight="108" columnWidth="283" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0e0efff8-709e-4ae2-a873-f1a4f27f2429">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<field name="goodsName" class="java.lang.String"/>
+	<field name="goodsNumber" class="java.lang.Integer"/>
+	<field name="index" class="java.lang.String"/>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="36" y="-2" width="211" height="20" uuid="ca38f9bd-fc06-4661-b532-7ef7c6065b2a"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SimSun" size="12" isBold="true" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{goodsName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="247" y="-2" width="30" height="20" uuid="028e9ad4-e5cc-4896-832c-d8efdffdbb0b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SimSun" size="12" isBold="true" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{goodsNumber}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="6" y="0" width="30" height="18" uuid="c4288f6f-2afd-4590-a706-bb6eef996bbb"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SimSun" size="12" isBold="true" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{index}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

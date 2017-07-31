@@ -1,0 +1,1 @@
+var projectWebRoot = "http://localhost:8080/";

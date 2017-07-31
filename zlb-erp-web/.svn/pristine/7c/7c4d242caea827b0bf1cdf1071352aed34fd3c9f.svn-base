@@ -1,0 +1,35 @@
+.L_goods_detailed {
+	width: 2000px;
+}
+
+.L_goods_detailed tr th {
+	text-align: center;
+}
+
+.L_goods_detailed tr td {
+	text-align: center;
+}
+
+.L_goods_form tr {
+	margin-top: 30px;
+}
+
+.L_goods_form  tr td {
+	text-align: center;
+}
+
+.L_mail div p {
+	float: left;
+}
+
+.L_mail div input {
+	float: left;
+}
+
+.L_Eeject_two tr th {
+	text-align: center;
+}
+
+.L_Eeject_two tr td {
+	text-align: center;
+}

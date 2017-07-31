@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:application name="web-consumer" owner="programmer" organization="dubbox"/>
+    <dubbo:consumer check="false" timeout="${dubbo.consumer.timeout}" />
+    <dubbo:registry address="${dubbo.registry.address}" timeout="${dubbo.registry.timeout}"/>
+
+    <dubbo:annotation package="com.zhilianbao.erp" />
+
+	<import resource="classpath:dubbo-consumer/*/dubbo-*.xml"/>
+	<!-- <import resource="classpath:dubbo-consumer/oms/dubbo-*.xml" /> -->
+	<!-- <import resource="classpath:dubbo-consumer/tms/dubbo-*.xml" /> -->
+<!-- 	<import resource="classpath:dubbo-consumer/auth/dubbo-*.xml" /> -->
+<!-- 	<import resource="classpath:dubbo-consumer/wms/dubbo-*.xml" /> -->
+<!-- 	<import resource="classpath:dubbo-consumer/pms/dubbo-pms.xml"/> -->
+
+</beans>

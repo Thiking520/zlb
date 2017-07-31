@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptFinance" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9fcfc94a-a5ed-4650-9da9-e11aaf7bcfb6">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString language="json">
+		<![CDATA[]]>
+	</queryString>
+	<field name="checkSheetCode" class="java.lang.String"/>
+	<field name="supplierName" class="java.lang.String"/>
+	<field name="totalAmount" class="java.lang.String"/>
+	<field name="remark" class="java.lang.String"/>
+	<field name="purchaseCode" class="java.lang.String"/>
+	<field name="applyTime" class="java.lang.String"/>
+	<field name="completeTime" class="java.lang.String"/>
+	<field name="actualAmount" class="java.lang.String"/>
+	<field name="payState" class="java.lang.String"/>
+	<group name="checkSheetCode" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{checkSheetCode}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="131">
+			<textField>
+				<reportElement x="134" y="64" width="100" height="20" uuid="cddd9f14-129a-4794-8a62-8d49bdb29a6a"/>
+				<textElement>
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{actualAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="134" y="43" width="100" height="20" uuid="d7683420-e871-4c1c-b1fe-1f60ae84900c"/>
+				<textElement>
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalAmount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="64" y="43" width="70" height="20" uuid="a811bc73-5278-468e-a84b-0b131843dd87"/>
+				<textElement markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[应付金额:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="228" y="110" width="68" height="21" uuid="91fb76d8-0fa2-4533-9be6-0e32dfb7329d"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[应付金额]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="64" y="1" width="70" height="20" uuid="0997ea68-ad69-4d3e-bbba-2b8902cc1449"/>
+				<textElement markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[对账单号:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="134" y="85" width="100" height="20" uuid="21d8ab63-64d4-47a3-afa8-d3a913b0ca90"/>
+				<textElement>
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{remark}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="487" y="110" width="65" height="21" uuid="07d1917c-c02f-4ef1-9ac0-a3de81d65064"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[付款状态]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="296" y="110" width="90" height="21" uuid="64dcb18f-c440-4aa2-93f4-9003edbc41c3"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[供应商]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="104" y="110" width="124" height="21" uuid="8f046dbb-fa47-4632-9f01-ad746bf88efd"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[采购申请时间]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="134" y="1" width="100" height="20" uuid="55e7278d-d748-44c4-9f03-2221fa5cea84"/>
+				<textElement>
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{checkSheetCode}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="64" y="85" width="70" height="20" uuid="9fa28c3a-b42f-4793-988e-92a82847c17d"/>
+				<textElement markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[说明:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="64" y="64" width="70" height="20" uuid="0b579784-550d-4eec-96a3-ffa7706ea023"/>
+				<textElement markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[实付金额:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="110" width="103" height="20" uuid="79155d4f-9e47-41d4-aa34-432d828906d5"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[采购单号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="64" y="22" width="70" height="20" uuid="95e137b7-1e30-43fd-bd11-d6304b219f96"/>
+				<textElement markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[供应商名称:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="386" y="110" width="101" height="21" uuid="66e743fd-71f8-45eb-ae9c-ba8e357df4a3"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[完成时间]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="134" y="22" width="100" height="20" uuid="217d4f90-2575-471c-9830-01272a563035"/>
+				<textElement>
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{supplierName}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="104" height="23" uuid="2e5b2b38-ce94-4811-90da-a6fdc7857b61"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{purchaseCode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="104" y="0" width="124" height="23" uuid="034c1a7a-fd2d-4bb9-a37f-0b8e64b5bbea"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{applyTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="228" y="0" width="67" height="23" uuid="a33bb9d0-853f-4d63-ad3c-7ca68a0e57ef"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="295" y="1" width="90" height="22" uuid="74411cbf-19c5-4281-84df-29273d61c208"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{supplierName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="385" y="1" width="101" height="22" uuid="e57930c4-9ba1-4b41-afa1-1c60c5d87ef7"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{completeTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="486" y="1" width="66" height="22" uuid="34e063fc-286b-4a4d-b3b7-8d8b42a407af"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{payState}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>

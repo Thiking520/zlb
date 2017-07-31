@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptSkuBarCode" language="groovy" pageWidth="288" pageHeight="122" columnWidth="248" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="1307f12a-a362-4571-9e84-0d695bb681a5">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<field name="skuBarCode" class="java.lang.String"/>
+	<pageHeader>
+		<band height="82" splitType="Stretch">
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="0" y="0" width="248" height="57" uuid="efb4fd6e-15b8-44b4-a167-ad865ef333c6"/>
+				<imageExpression><![CDATA[com.google.zxing.client.j2se.MatrixToImageWriter.toBufferedImage(new com.google.zxing.oned.Code128Writer().encode($F{skuBarCode},com.google.zxing.BarcodeFormat.CODE_128,188,40))]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="0" y="57" width="248" height="18" uuid="fffeccfe-7e4e-4571-998f-d23d9ab26f72"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun" size="15" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{skuBarCode}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+</jasperReport>
