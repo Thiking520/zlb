@@ -1,0 +1,33 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsItemBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsItemMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsItemService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsItemVo;
+@Service
+@Transactional
+public class GoodsItemServiceImpl implements IGoodsItemService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsItemServiceImpl.class);
+	
+	@Autowired
+	GoodsItemMapper goodsItemMapper;
+	
+	@Override
+	public void add(GoodsItemVo goodsItemVo) {
+		logger.info("单品：新增明细，参数：{}",goodsItemVo);
+		GoodsItemBean goodsItemBean = new GoodsItemBean();
+		goodsItemBean.setGoodsId(goodsItemVo.getGoodsId());
+		goodsItemBean.setGoodsStockId(goodsItemVo.getGoodsStockId());
+		goodsItemMapper.insertSelective(goodsItemBean);
+	}
+
+	
+}

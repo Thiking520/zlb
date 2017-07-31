@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.archives.DeliveryRecordMapper">
+
+	<select id="queryDeliveryRecords" parameterType="map" resultMap="BaseResultMap">
+		<include refid="Base_Header"></include>
+		<if test="vo !=null and vo.code !='' and vo.code !=null">
+			 and dr.code like CONCAT('%',#{vo.code},'%')
+		</if>
+		<if test="vo !=null and vo.name !='' and vo.name !=null">
+			 and dr.name like CONCAT('%',#{vo.name},'%')
+		</if>
+		<if test="vo !=null and vo.deliveryType !='' and vo.deliveryType !=null">
+			 and dr.delivery_type = #{vo.deliveryType}
+		</if>
+		<if test="vo !=null  and vo.enabled != null">
+			 and dr.enabled = #{vo.enabled}
+		</if>
+		order by dr.create_time desc
+	</select>
+	
+	<select id="query_SJ_DeliveryRecords" parameterType="map" resultMap="BaseResultMap">
+		<include refid="Base_Header"></include>
+		<if test="vo !=null and vo.code !='' and vo.code !=null">
+			 and dr.code like CONCAT('%',#{vo.code},'%')
+		</if>
+		<if test="vo !=null and vo.name !='' and vo.name !=null">
+			 and dr.name like CONCAT('%',#{vo.name},'%')
+		</if>
+		<if test="vo !=null and vo.deliveryType !='' and vo.deliveryType !=null">
+			 and dr.delivery_type &lt; #{vo.deliveryType}
+		</if>
+		<if test="vo !=null  and vo.enabled != null">
+			 and dr.enabled = #{vo.enabled}
+		</if>
+		order by dr.create_time desc
+	</select>
+	
+	<select id="queryDeliveryRecordDetails"  resultMap="BaseResultMap">
+		<include refid="Base_Header"></include>
+		and dr.recordId = #{vo.id}
+	</select>
+	
+	<select id="findSubPoint" resultMap="BaseResultMap">
+		select * from t_delivery_record where superior=#{id} and deleted = false
+	</select>
+	
+	
+	<select id="queryDRByUserID"  resultMap="BaseResultMap">
+		<include refid="Base_Header"></include>
+		AND dr.recordId = (
+			SELECT
+				emp.distribution_point
+			FROM 
+				t_user_admin tuser
+			LEFT JOIN t_employee_accounts_list empAcc ON tuser.center_id = empAcc.admin_id
+			LEFT JOIN t_employee_information emp ON emp.id = empAcc.employee_id
+			WHERE
+				tuser.center_id = #{userId} 
+		)
+	</select>
+	<select id="queryDRByOperatorId"  resultMap="BaseResultMap">
+		<include refid="Base_Header"></include>
+	</select>
+	
+	<insert id="addDeliveryRecord"   useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_delivery_record (
+				code, 
+				name, 
+				operator_id, 
+				enabled,
+				self_pickup,
+				delivery_type, 
+				superior,
+				province, 
+				city, 
+				area, 
+				street, 
+				detailed_address, 
+				delivery_head,
+				delivery_head_phone,
+				latitude,
+				longitude, 
+				custom1, 
+				custom2, 
+				custom3, 
+				describes,
+				creator
+			)
+		VALUES (
+			#{code},
+			#{name},
+			#{operatorId},
+			#{enabled},
+			#{selfPickup},
+			#{deliveryType},
+			#{superior},
+			#{province},
+			#{city},
+			#{area},
+			#{street},
+			#{detailedAddress},
+			#{deliveryHead},
+			#{deliveryHeadPhone},
+			#{latitude},
+			#{longitude},
+			#{custom1},
+			#{custom2},
+			#{custom3},
+			#{describes},
+			#{creator}
+		)
+	</insert>
+	<select id="mulDRName" parameterType="list" resultMap="BaseResultMap">
+      select 
+      <include refid="Base_Column_List"></include>
+      from 
+      t_delivery_record dr 
+      <where>
+          dr.id in 
+          <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+              #{item}
+          </foreach>
+      </where>
+  </select>
+	<select id="findCurrentPoint" parameterType="map" resultMap="BaseResultMap">
+		select 
+			dr.* 
+		from 
+			t_employee_point_list epl,
+			t_employee_information ei,
+			(<include refid="Base_Header" />) dr,
+			t_user_admin u,
+			t_employee_accounts_list eal
+		where epl.employee_id = ei.id
+			and epl.delivery_record_id = dr.id
+			and epl.deleted = false
+			and ei.deleted = false
+			and ei.enabled = true
+			and eal.admin_id = u.center_id
+			and eal.employee_id = ei.id
+			and eal.enabled = true 
+			and eal.deleted = false 
+			and u.enabled = true 
+			and u.deleted = false
+			and ei.operator_id = #{vo.operatorId}
+			and u.center_id = #{vo.userId}
+			<if test="vo !=null and vo.code !='' and vo.code !=null">
+				 and dr.code like CONCAT('%',#{vo.code},'%')
+			</if>
+			<if test="vo !=null and vo.name !='' and vo.name !=null">
+				 and dr.name like CONCAT('%',#{vo.name},'%')
+			</if>
+			<if test="vo !=null and vo.deliveryType !='' and vo.deliveryType !=null">
+				 and dr.delivery_type = #{vo.deliveryType}
+			</if>
+			<if test="vo !=null  and vo.enabled != null">
+				 and dr.enabled = #{vo.enabled}
+			</if>
+			order by dr.create_time desc
+	</select>
+	
+	<select id="findByName" resultMap="ResultMap">
+		select * from t_delivery_record where name = #{name} and deleted = false and operator_id = #{operatorId}
+		<if test="id != null and id != ''">
+			and id != #{id}
+		</if>
+	</select>
+	
+	<select id="findByType" resultMap="ResultMap">
+		select * from t_delivery_record where delivery_type = #{deliveryType} and deleted = false and operator_id = #{operatorId}
+		<if test="id != null and id != ''">
+			and id != #{id}
+		</if>
+	</select>
+	
+	<select id="findPointList" parameterType="map" resultMap="ResultMap">
+		select dr.code,dr.name,dr.id from t_delivery_record dr where dr.operator_id = #{vo.operatorId} and dr.deleted = false and dr.enabled = true
+	</select>
+	
+	<select id="findAllPoint" parameterType="map" resultMap="ResultMap">
+		select dr.code,dr.name,dr.id from 
+			t_delivery_record dr,
+			t_employee_point_list epl,
+			t_employee_information e,
+			t_user_admin u,
+			t_employee_accounts_list eal
+		where eal.admin_id = u.center_id
+			and eal.employee_id = e.id
+			and epl.employee_id = e.id
+			and epl.delivery_record_id = dr.id
+			and eal.enabled = true 
+			and eal.deleted = false 
+			and epl.deleted = false 
+			and u.enabled = true 
+			and u.deleted = false 
+			and e.deleted = false 
+			and e.enabled = true
+			and dr.deleted = false
+			and dr.enabled = true
+			<if test="vo !=null  and vo.userId != null">
+				 and u.center_id = #{vo.userId}
+			</if>
+			and dr.operator_id = #{vo.operatorId}
+	</select>
+	<sql id="Base_Column_List">
+		<!-- WARNING - @mbggenerated -->
+		id, code, name, operator_id, enabled,
+		delivery_type, superior,
+		province, city, area, street, detailed_address, delivery_head,
+		delivery_head_phone,
+		latitude, longitude, custom1, custom2, custom3, create_time, describes,
+		creator,
+		modifier, update_time
+	</sql>
+	<sql id="Base_Header">
+		SELECT
+			dr.recordId id,
+			dr. CODE,
+			dr.operator_id,
+			dr.delivery_type,
+			dr. NAME,
+			dr.deleted,
+			dr.creator,
+			dr.modifier,
+			dr.create_time,
+			dr.update_time,
+			dr.delivery_head,
+			dr.delivery_head_phone,
+			dr.superior,
+			dr.enabled,
+			dr.latitude,
+			dr.longitude,
+			dr.self_pickup as selfPickup,
+			dr.detailed_address,
+			dr.custom1,
+			dr.custom2,
+			dr.province,
+			dr.city,
+			dr.area,
+			dr.street,
+			dr.provinceName AS provinceName,
+			b.cityName AS cityName,
+			c.areaName AS areaName,
+			d.streetName AS streetName,
+			oc.company_name operatorName,
+			USER1.user_name creatorName,
+			USER2.user_name modifierName,
+			dr2. NAME superiorName,
+			emp.cn_name deliveryHeadName
+		FROM
+			(
+				SELECT
+					tdr.id AS recordId,
+					tdr.operator_id,
+					tdr.delivery_type,
+					tdr.creator,
+					tdr.modifier,
+					tdr.create_time,
+					tdr.update_time,
+					tdr.delivery_head,
+					tdr.delivery_head_phone,
+					tdr.superior,
+					tdr. NAME,
+					tdr. CODE,
+					tdr.deleted,
+					tdr.enabled,
+					tdr.latitude,
+					tdr.longitude,
+					tdr.self_pickup,
+					tdr.detailed_address,
+					tdr.custom1,
+					tdr.custom2,
+					tdr.province,
+					tdr.city,
+					tdr.area,
+					tdr.street,
+					ba1.area_name provinceName
+				FROM
+					t_delivery_record tdr
+				LEFT JOIN (
+					SELECT
+						id,
+						area_name
+					FROM
+						t_base_area
+					WHERE
+						LEVEL = 1
+				) ba1 ON ba1.id = tdr.province
+				WHERE tdr.deleted = 0  and tdr.operator_id = #{vo.operatorId} 
+			) dr
+		LEFT JOIN (
+			SELECT
+				*
+			FROM
+				(
+					SELECT
+						dr.id AS recordId,
+						dr.delivery_type,
+						dr. NAME,
+						ba2.area_name cityName
+					FROM
+						t_delivery_record dr
+					LEFT JOIN t_base_area ba2 ON ba2.id = dr.city
+					WHERE
+						LEVEL = 2
+					AND dr.deleted = 0
+				) cityTb
+		) b ON dr.recordId = b.recordId
+		LEFT JOIN (
+			SELECT
+				*
+			FROM
+				(
+					SELECT
+						dr.id AS recordId,
+						dr.delivery_type,
+						dr. NAME,
+						ba3.area_name areaName
+					FROM
+						t_delivery_record dr
+					LEFT JOIN t_base_area ba3 ON ba3.id = dr.area
+					WHERE
+						LEVEL = 3
+					AND dr.deleted = 0
+				) areaTb
+			LIMIT 99999
+		) c ON dr.recordId = c.recordId
+		LEFT JOIN (
+			SELECT
+				recordId,
+				id,
+				delivery_type,
+				NAME,
+				streetName
+			FROM
+				(
+					SELECT
+						dr.id AS recordId,
+						ba4.id,
+						dr.delivery_type,
+						dr. NAME,
+						ba4.area_name streetName
+					FROM
+						t_delivery_record dr
+					LEFT JOIN t_base_area ba4 ON ba4.id = dr.street
+					WHERE
+						LEVEL = 4
+					AND dr.deleted = 0
+				) streetTb
+			LIMIT 99999
+		) d ON dr.recordId = d.recordId
+		LEFT JOIN t_operator_company oc ON dr.operator_id = oc.company_key
+		LEFT JOIN t_user_admin USER1 ON dr.creator = USER1.center_id
+		LEFT JOIN t_user_admin USER2 ON dr.modifier = USER2.center_id
+		LEFT JOIN t_employee_information emp ON dr.delivery_head = emp.id
+		LEFT JOIN t_delivery_record dr2 ON dr.superior = dr2.id
+		WHERE
+			1 = 1 
+	</sql>
+	<resultMap id="BaseResultMap"
+		type="com.zhilianbao.erp.auth.vo.archives.DeliveryRecordVo">
+		<!-- WARNING - @mbggenerated -->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="enabled" property="enabled" jdbcType="INTEGER" />
+		<result column="delivery_type" property="deliveryType"
+			jdbcType="VARCHAR" />
+		<result column="superior" property="superior" jdbcType="BIGINT" />
+		<result column="province" property="province" jdbcType="BIGINT" />
+		<result column="city" property="city" jdbcType="BIGINT" />
+		<result column="area" property="area" jdbcType="BIGINT" />
+		<result column="street" property="street" jdbcType="BIGINT" />
+		<result column="detailed_address" property="detailedAddress"
+			jdbcType="VARCHAR" />
+		<result column="delivery_head" property="deliveryHead"
+			jdbcType="BIGINT" />
+		<result column="delivery_head_phone" property="deliveryHeadPhone"
+			jdbcType="VARCHAR" />
+		<result column="latitude" property="latitude" jdbcType="DECIMAL" />
+		<result column="longitude" property="longitude" jdbcType="DECIMAL" />
+		<result column="custom1" property="custom1" jdbcType="VARCHAR" />
+		<result column="custom2" property="custom2" jdbcType="VARCHAR" />
+		<result column="custom3" property="custom3" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="describes" property="describes" jdbcType="VARCHAR" />
+		<result column="creator" property="creator" jdbcType="BIGINT" />
+		<result column="modifier" property="modifier" jdbcType="BIGINT" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="ResultMap"
+		type="com.zhilianbao.erp.auth.vo.archives.DeliveryShortRecordVo">
+		<!-- WARNING - @mbggenerated -->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="delivery_type" property="deliveryType"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap id="recordResultMap" type="com.zhilianbao.erp.auth.vo.archives.DeliveryRecordVo"> 
+	    <id column="id" property="id" jdbcType="BIGINT" /> 
+	    <result column="code" property="code" jdbcType="VARCHAR" />
+	    <result column="name" property="name" jdbcType="VARCHAR" />
+	    <result column="deliveryType" property="deliveryType" jdbcType="INTEGER" />
+	    <result column="latitude" property="latitude" jdbcType="DECIMAL" />
+		<result column="longitude" property="longitude" jdbcType="DECIMAL" />
+	    
+		<collection property="deliveryScopeList" ofType="com.zhilianbao.erp.auth.vo.archives.DeliveryScopeVo">
+			<result column="isDelivery" property="isDelivery" jdbcType="INTEGER" />
+			<result column="overlayType" property="overlayType" jdbcType="INTEGER" />
+			<result column="pointLatitude" property="latitude" jdbcType="DECIMAL" />
+		    <result column="pointLongitude" property="longitude" jdbcType="DECIMAL" />
+		    <result column="southWestPointLat" property="southWestPointLat" jdbcType="DECIMAL" />
+		    <result column="southWestPointLng" property="southWestPointLng" jdbcType="DECIMAL" />
+		    <result column="northEastPointLat" property="northEastPointLat" jdbcType="DECIMAL" />
+		    <result column="northEastPointLng" property="northEastPointLng" jdbcType="DECIMAL" />
+		    <result column="circleRadius" property="circleRadius" jdbcType="DECIMAL" />
+		</collection>
+	</resultMap>
+	
+	<select id="findRecordList" resultMap="recordResultMap">
+		SELECT tdr.id,tdr.code,tdr.name,tdr.`delivery_type` as deliveryType,tdr.`latitude`,tdr.`longitude`,
+		tds.`is_delivery` as isDelivery,tds.`overlay_type` as overlayType,tds.`latitude` as pointLatitude,tds.`longitude` as pointLongitude,
+		tds.`south_west_point_lat` as southWestPointLat,tds.`south_west_point_lng` as southWestPointLng,
+		tds.`north_east_point_lat` as northEastPointLat,tds.`north_east_point_lng` as northEastPointLng,tds.`circle_radius` as circleRadius
+		FROM `t_delivery_record` tdr INNER JOIN  `t_delivery_scope` tds ON tdr.`id` = tds.`delivery_record_id`
+		AND tdr.`deleted`=0 AND tdr.`enabled`=1 AND tds.`deleted`=0 AND tdr.`operator_id`=#{operatorId}
+    </select>
+</mapper>

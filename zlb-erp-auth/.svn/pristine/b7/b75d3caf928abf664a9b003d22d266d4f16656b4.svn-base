@@ -1,0 +1,80 @@
+package com.zhilianbao.erp.auth.impl.archives.facade;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.entity.archives.DeliveryRecordBean;
+import com.zhilianbao.erp.auth.mapper.archives.DeliveryRecordMapper;
+import com.zhilianbao.erp.auth.service.archives.facade.IDeliveryRecordRestService;
+import com.zhilianbao.erp.auth.vo.archives.DeliveryRecordVo;
+import com.zhilianbao.erp.auth.vo.archives.facade.ParaDeliveryRecordRestSearchVo;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+
+@Service
+public class DeliveryRecordRestServiceImpl implements IDeliveryRecordRestService{
+	private static Logger logger = LogManager.getLogger(DeliveryRecordRestServiceImpl.class);
+	
+	
+	@Autowired
+	private DeliveryRecordMapper deliveryRecordMapper;
+	
+	@Override
+	public ResponseValue<List<DeliveryRecordVo>> mulDRName(ParaDeliveryRecordRestSearchVo paraDeliveryRecordRestSearchVo) {
+		ResponseValue<List<DeliveryRecordVo>> resp=new ResponseValue<List<DeliveryRecordVo>>();
+		if(paraDeliveryRecordRestSearchVo == null){
+			return resp.failure("参数为空！");
+		}
+		if(paraDeliveryRecordRestSearchVo.getList() == null || paraDeliveryRecordRestSearchVo.getList().size() == 0 ){
+			List<DeliveryRecordVo> list1=new ArrayList<DeliveryRecordVo>();
+			return resp.success(list1);
+		}
+		try{
+			List<DeliveryRecordVo> list=deliveryRecordMapper.mulDRName(paraDeliveryRecordRestSearchVo.getList());
+			resp.success(list);
+		}catch(Exception e){
+			logger.error("站点查询列表出错!",paraDeliveryRecordRestSearchVo, e);
+			return new ResponseValue<List<DeliveryRecordVo>>().err("查询异常");
+		}
+		return resp;
+	}
+
+	@Override
+	public ResponseValue<DeliveryRecordVo> mulDRSimpleName(ParaDeliveryRecordRestSearchVo paraDeliveryRecordRestSearchVo) {
+		ResponseValue<DeliveryRecordVo> resp=new ResponseValue<DeliveryRecordVo>();
+		if(paraDeliveryRecordRestSearchVo == null){
+			return resp.failure("参数为空！");
+		}
+		try{
+			DeliveryRecordBean bean=new DeliveryRecordBean();
+			bean.setId(paraDeliveryRecordRestSearchVo.getId());
+			DeliveryRecordVo vo=deliveryRecordMapper.queryDeliveryRecordDetails(bean);
+			resp.success(vo);
+		}catch(Exception e){
+			logger.error("站点查询列表出错!",paraDeliveryRecordRestSearchVo, e);
+			return new ResponseValue<DeliveryRecordVo>().err("查询异常");
+		}
+		return resp;
+	}
+
+	@Override
+	public ResponseValue<List<DeliveryRecordVo>> queryDRByOperatorId(ParaDeliveryRecordRestSearchVo paraDeliveryRecordRestSearchVo) {
+		ResponseValue<List<DeliveryRecordVo>> resp=new ResponseValue<List<DeliveryRecordVo>>();
+		if(paraDeliveryRecordRestSearchVo == null){
+			return resp.failure("参数为空！");
+		}
+		try{
+			List<DeliveryRecordVo> list=deliveryRecordMapper.queryDRByOperatorId(paraDeliveryRecordRestSearchVo.getOperatorId());
+			resp.success(list);
+		}catch(Exception e){
+			logger.error("站点查询列表出错!",paraDeliveryRecordRestSearchVo, e);
+			return new ResponseValue<List<DeliveryRecordVo>>().err("查询异常");
+		}
+		return resp;
+	}
+
+}

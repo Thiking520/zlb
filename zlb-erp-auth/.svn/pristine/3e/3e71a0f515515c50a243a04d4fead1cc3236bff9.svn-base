@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
+
+	<!-- 配置多数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!-- 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass -->
+		<property name="driverClassName" value="${jdbc.driver}" />
+
+		<!-- 基本属性 url、user、password -->
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="${jdbc.initialSize}" />
+		<property name="minIdle" value="${jdbc.minIdle}" />
+		<property name="maxActive" value="${jdbc.maxActive}" />
+
+		<property name="maxWait" value="${jdbc.maxWait}" />
+
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="20" />
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="stat" />
+	</bean>
+	
+	<bean id="sqlSessionFactoryBean"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="xml/mybatis-config.xml" />
+		<property name="typeAliasesPackage" value="com.zhilianbao.erp.auth" />
+		<property name="mapperLocations" >
+            <array>
+                <value>mapper/**/*Mapper.xml</value>
+            </array>
+        </property>
+        <property name="plugins">
+			<array>
+			    <bean class="com.github.pagehelper.PageInterceptor">
+			        <!-- 这里的几个配置主要演示如何使用，如果不理解，一定要去掉下面的配置 -->
+			        <property name="properties">
+			            <value>
+			                helperDialect=mysql
+			                rowBoundsWithCount=true
+			            </value>
+			        </property>
+			    </bean>
+			</array>
+		</property>        
+	</bean>
+
+
+	<!-- mybatis 通用Mapper -->
+	<bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+	    <property name="basePackage" value="com.zhilianbao.erp.auth.mapper"/>
+	    <!-- <property name="markerInterface" value="com.zhilianbao.erp.base.mapper.BaseMapper"/> -->
+	</bean>	
+
+<!-- 	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.zhilianbao.erp.auth.mapper" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryBean" />
+	</bean> -->
+
+
+
+
+</beans>

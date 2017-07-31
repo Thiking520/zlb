@@ -1,0 +1,82 @@
+package com.zhilianbao.erp.auth.entity.goods;
+
+import java.io.Serializable;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+import com.zhilianbao.erp.common.util.LogBeanNoNullStyle;
+
+@Table(name = "t_goods_item")
+public class GoodsItemBean extends BaseBean implements Serializable{
+	private static final long serialVersionUID = 671606311057393022L;
+
+	/**
+     * 主键id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long goodsId;
+    private Long goodsStockId;
+
+    /**
+     * 获取主键id
+     *
+     * @return id - 主键id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * 设置主键id
+     *
+     * @param id 主键id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+	/** 
+	 * 获取
+	 * @return goodsId 
+	 */
+	public Long getGoodsId() {
+		return goodsId;
+	}
+
+	/** 
+	 * 设置
+	 * @param goodsId 
+	 */
+	public void setGoodsId(Long goodsId) {
+		this.goodsId = goodsId;
+	}
+
+	/** 
+	 * 获取
+	 * @return goodsStockId 
+	 */
+	public Long getGoodsStockId() {
+		return goodsStockId;
+	}
+
+	/** 
+	 * 设置
+	 * @param goodsStockId 
+	 */
+	public void setGoodsStockId(Long goodsStockId) {
+		this.goodsStockId = goodsStockId;
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, new LogBeanNoNullStyle());
+	}
+}

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.archives.DeliveryScopeMapper">
+	<resultMap id="BaseResultMap"
+		type="com.zhilianbao.erp.auth.vo.archives.DeliveryScopeVo">
+		<!-- WARNING - @mbggenerated -->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="delivery_record_id" property="deliveryRecordId" jdbcType="VARCHAR" />
+		<result column="delivery_code" property="deliveryCode" jdbcType="VARCHAR" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="province" property="province" jdbcType="BIGINT" />
+		<result column="is_delivery" property="isDelivery" jdbcType="INTEGER" />
+		<result column="city" property="city" jdbcType="BIGINT" />
+		<result column="area" property="area" jdbcType="BIGINT" />
+		<result column="street" property="street" jdbcType="BIGINT" />
+		<result column="level" property="level" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="creator" property="creator" jdbcType="BIGINT" />
+		<result column="modifier" property="modifier" jdbcType="BIGINT" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="scopeResultMap" type="com.zhilianbao.erp.auth.vo.archives.DeliveryScopeVo"> 
+	    <id column="id" property="id" jdbcType="BIGINT" />  
+	    <result column="overlayType" property="overlayType" jdbcType="INTEGER" />
+	    <result column="latitude" property="latitude" jdbcType="DECIMAL" />
+		<result column="longitude" property="longitude" jdbcType="DECIMAL" />
+		<result column="circleRadius" property="circleRadius" jdbcType="DECIMAL" />
+	    
+		<collection property="overLayPoints" ofType="com.zhilianbao.erp.auth.vo.archives.DeliveryScopePointVo">
+			<result column="deliveryScopeId" jdbcType="VARCHAR" property="deliveryScopeId" />
+			<result column="pointLatitude" property="pointLatitude" jdbcType="DECIMAL" />
+		    <result column="pointLongitude" property="pointLongitude" jdbcType="DECIMAL" />
+		</collection>
+	</resultMap>
+	
+	
+	<sql id="Base_Column_List">
+		<!-- WARNING - @mbggenerated -->
+		id, delivery_record_id,operator_id, province,is_delivery, city, area, street, level, name,
+		create_time, creator,
+		modifier, update_time, deleted
+	</sql>
+	<sql id="Base_Header">
+		SELECT
+			ds.recordId AS id,
+			ds.delivery_record_id,
+			ds.operator_id,
+			ds.province,
+			ds.city,
+			ds.area,
+			ds.street,
+			ds.is_delivery,
+			ds.`level`,
+			ds. NAME,
+			ds.creator,
+			ds.modifier,
+			ds.create_time,
+			ds.update_time,
+			ds.deleted,
+			ds.provinceName AS provinceName,
+			ds.detailed_address AS  detailedAddress,
+			ds.scope_head AS scopeHead,
+			ds.scope_head_name AS scopeHeadName,
+			ds.scope_head_phone AS scopeHeadPhone,
+			ds.overlay_type AS overlayType,
+			ds.latitude,
+			ds.longitude,
+			ds.south_west_point_lat AS southWestPointLat,
+			ds.south_west_point_lng AS southWestPointLng,
+			ds.north_east_point_lat AS northEastPointLat,
+			ds.north_east_point_lng AS northEastPointLng,
+			ds.circle_radius AS circleRadius,
+			b.cityName AS cityName,
+			c.areaName AS areaName,
+			d.streetName AS streetName,
+			USER1.user_name creatorName
+		FROM
+			(
+				SELECT
+					tds.id AS recordId,
+					tds.delivery_record_id,
+					tds.operator_id,
+					tds.province,
+					tds.city,
+					tds.area,
+					tds.street,
+					tds.is_delivery,
+					tds.`level`,
+					tds. NAME,
+					tds.creator,
+					tds.modifier,
+					tds.create_time,
+					tds.update_time,
+					tds.deleted,
+					tds.detailed_address,
+					tds.scope_head,
+					tds.scope_head_name,
+					tds.scope_head_phone,
+					tds.overlay_type,
+					tds.latitude,
+					tds.longitude,
+					tds.south_west_point_lat,
+					tds.south_west_point_lng,
+					tds.north_east_point_lat,
+					tds.north_east_point_lng,
+					tds.circle_radius,
+					ba1.area_name provinceName
+				FROM
+					t_delivery_scope tds
+				LEFT JOIN (
+					SELECT
+						id,
+						area_name
+					FROM
+						t_base_area t1
+					WHERE
+						t1.`level` = 1
+				) ba1 ON ba1.id = tds.province
+				WHERE
+					tds.deleted = 0
+			) ds
+		LEFT JOIN (
+			SELECT
+				*
+			FROM
+				(
+					SELECT
+						ds.id AS recordId,
+						ds. NAME,
+						ba2.area_name cityName
+					FROM
+						t_delivery_scope ds
+					LEFT JOIN t_base_area ba2 ON ba2.id = ds.city
+					WHERE
+						ba2.`level` = 2
+					AND ds.deleted = 0
+				) cityTb
+		) b ON ds.recordId = b.recordId
+		LEFT JOIN (
+			SELECT
+				*
+			FROM
+				(
+					SELECT
+						ds.id AS recordId,
+						ds. NAME,
+						ba3.area_name areaName
+					FROM
+						t_delivery_scope ds
+					LEFT JOIN t_base_area ba3 ON ba3.id = ds.area
+					WHERE
+						ba3.`level` = 3
+					AND ds.deleted = 0
+				) areaTb
+			LIMIT 99999
+		) c ON ds.recordId = c.recordId
+		LEFT JOIN (
+			SELECT
+				recordId,
+				id,
+				NAME,
+				streetName
+			FROM
+				(
+					SELECT
+						ds.id AS recordId,
+						ba4.id,
+						ds. NAME,
+						ba4.area_name streetName
+					FROM
+						t_delivery_scope ds
+					LEFT JOIN t_base_area ba4 ON ba4.id = ds.street
+					WHERE
+						ba4.`level` = 4
+					AND ds.deleted = 0
+				) streetTb
+			LIMIT 99999
+		) d ON ds.recordId = d.recordId
+		LEFT JOIN t_user_admin USER1 ON ds.creator = USER1.center_id
+		WHERE
+			1 = 1
+	</sql>
+	<select id="queryDeliveryScopes" parameterType="map" resultMap="BaseResultMap">
+		SELECT a.delivery_type,a.name AS deliveryName,a.code AS delivery_code,b.* FROM `t_delivery_record` a INNER JOIN (
+			<include refid="Base_Header"></include> 
+			AND ds.deleted = 0 
+			<if test="vo !=null and vo.isDelivery !=null">
+				and ds.is_delivery = #{vo.isDelivery} 
+			</if>
+			<if test="vo !=null and vo.deliveryRecordId !=null ">
+				and ds.delivery_record_id = #{vo.deliveryRecordId} 
+			</if>
+			<if test="vo !=null and vo.operatorId !=null ">
+				and ds.operator_id = #{vo.operatorId} 
+			</if>
+		) b ON a.id=b.delivery_record_id and a.deleted = 0 and a.enabled = 1
+	</select>
+	<select id="queryDeliveryScopeDetails"  resultMap="BaseResultMap">
+		<include refid="Base_Header"></include>
+		<if test="id !=null and id !=''">
+			and ds.recordId = #{id}
+		</if>
+	</select>
+	<select id="queryDeliveryRecordByPCAS"  resultType="INTEGER">
+		SELECT
+			count(*)
+		FROM t_delivery_scope ds 
+		where
+			ds.delivery_record_id in (
+				SELECT id from t_delivery_record where delivery_type =  #{deliveryRecordType} and deleted = false
+			) and 
+			ds.is_delivery=#{isDelivery}
+			
+			<if test="province !=null and province !=''">
+				and ds.province = #{province} 
+			</if>
+			<if test="province ==null or province ==''">
+				and ds.province is null 
+			</if>
+			<if test="city !=null and city !=''">
+				and ds.city = #{city}
+			</if>
+			<if test="city ==null or city ==''">
+				and ds.city is null
+			</if>
+			<if test="area !=null and area !=''">
+				and ds.area = #{area}
+			</if>
+			<if test="area ==null or area ==''">
+				and ds.area is null
+			</if>
+			<if test="street !=null and street !=''"> 
+				and ds.street = #{street}
+			</if>
+			<if test="street ==null or street ==''"> 
+				and ds.street is null
+			</if>
+			<if test="id !=null"> 
+				and ds.id != #{id}
+			</if>
+			and ds.name = #{name}
+			and ds.operator_id = #{operatorId}
+			and ds.deleted = false
+	</select>
+	
+	<select id="queryDeliveryRecordByPCAS2"  resultMap="BaseResultMap">
+		SELECT
+			ds.*
+		FROM
+			t_delivery_scope ds 
+		where  
+		ds.delivery_record_id in (
+			SELECT id from t_delivery_record where delivery_type =  #{deliveryRecordType} and deleted = false
+		) and 
+		ds.is_delivery=#{isDelivery}
+		<if test="province !=null and province !=''">
+			and ds.province = #{province} 
+		</if>
+		<if test="city !=null and city !=''">
+			and ds.city = #{city}
+		</if>
+		<if test="area !=null and area !=''">
+			and ds.area = #{area}
+		</if>
+		<if test="street !=null and street !=''"> 
+			and ds.street = #{street}
+		</if>
+		<if test="operatorId !=null and operatorId !=''"> 
+			and ds.operator_id = #{operatorId}
+		</if>
+		<if test="id !=null"> 
+			and ds.id != #{id}
+		</if>
+		and ds.deleted = false
+	</select>
+	
+	
+	<select id="findDeliveryScopes" resultMap="BaseResultMap">
+		select 
+			ds.* 
+		from 
+			t_delivery_record dr,
+			t_delivery_scope ds
+		where
+			ds.delivery_record_id = dr.id
+			and dr.deleted = false
+			and dr.enabled = true 
+			and ds.deleted = false
+			and ds.is_delivery = #{isDelivery}
+			and dr.id = #{deliveryRecordId}
+			and ds.operator_id = #{operatorId}
+			<if test="id !=null"> 
+				and ds.id != #{id}
+			</if>
+			
+	</select>
+	
+	<select id="findById" resultMap="BaseResultMap">
+		select * from t_delivery_scope where id = #{id} and deleted = false
+	</select>
+	
+	
+    <select id="queryBaseAreaByProvinceIds" parameterType="list" resultMap="BaseResultMap">
+	  SELECT protb.id AS province,protb.area_name AS provinceName,
+		citytb.id AS city,citytb.area_name AS cityName,
+		areatb.id AS AREA ,areatb.area_name AS areaName
+		FROM t_base_area protb LEFT JOIN t_base_area citytb ON protb.id=citytb.parent_id 
+		LEFT JOIN (SELECT id,area_name,parent_id FROM `t_base_area` WHERE LEVEL=3) areatb ON citytb.id=areatb.parent_id 
+		WHERE protb.LEVEL=1 
+      <if test="list != null and list.size() > 0">
+             AND protb.id IN 
+	          <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+	              #{item}
+	          </foreach>
+      </if>
+    </select>
+    
+    
+    
+    <select id="queryOverLayPoints" resultMap="scopeResultMap">
+		SELECT ds.id,ds.`overlay_type` AS overlayType,ds.`latitude`,ds.`longitude`,ds.`circle_radius` AS circleRadius,
+		dsp.`delivery_scope_id` AS deliveryScopeId,dsp.`longitude` as pointLongitude,dsp.`latitude` as pointLatitude 
+		FROM `t_delivery_scope` ds 
+		LEFT JOIN `t_delivery_scope_points` dsp ON ds.id=dsp.`delivery_scope_id`
+		WHERE ds.`operator_id` = #{operatorId} AND ds.`delivery_record_id`=#{deliveryRecordId} AND ds.is_delivery = #{isDelivery} AND ds.`deleted`=0 
+    </select>
+    
+    
+    <insert id="batchInsertOverlayPoint" parameterType="java.util.List">
+    	insert into `t_delivery_scope_points` (`delivery_scope_id`, `longitude`, `latitude`) 
+    	values
+        <foreach collection="list" item="item" separator="," index="index">
+	        (
+		        #{item.deliveryScopeId},
+		        #{item.pointLongitude},
+		        #{item.pointLatitude}
+	        )
+	    </foreach>
+	</insert>
+	
+</mapper>

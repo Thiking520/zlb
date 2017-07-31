@@ -1,0 +1,1 @@
+authInterceptor=com.zhilianbao.erp.app.impl.interceptor.AuthenticationInterceptor

@@ -1,0 +1,43 @@
+package com.zhilianbao.erp.auth.tests;
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.alibaba.fastjson.JSON;
+import com.zhilianbao.erp.auth.service.operators.IOperatorService;
+import com.zhilianbao.erp.auth.service.user.IUserService;
+import com.zhilianbao.erp.auth.vo.operators.OperatorVo;
+import com.zhilianbao.erp.auth.vo.user.RetUserVo;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "classpath*:/application.xml","classpath*:/META-INF/spring/dubbo-consumer.xml" })
+public class Tests {
+	@Autowired
+	private IOperatorService iOperatorService;
+	@Autowired
+	private IUserService iUserService;
+	
+	
+	@Test
+	public void testx() {
+		List<Long> list=new ArrayList<Long>();
+		list.add(52l);
+		list.add(51l);
+		List<OperatorVo> nameList=iOperatorService.mulOperatorName(list);
+		System.out.println(JSON.toJSONString(nameList));
+		
+		List<Long> list1=new ArrayList<Long>();
+		list1.add(1l);
+		list1.add(2l);
+		List<RetUserVo> nameList1=iUserService.mulUserName(list1);
+		System.out.println(JSON.toJSONString(nameList1));
+	}
+}

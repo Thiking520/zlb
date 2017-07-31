@@ -1,0 +1,23 @@
+package com.zhilianbao.erp.auth.impl.employee;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.mapper.employee.EmployeePointListMapper;
+import com.zhilianbao.erp.auth.service.employee.IEmployeePointListService;
+import com.zhilianbao.erp.auth.vo.employee.EmployeePointListVo;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeVo;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+@Service
+public class EmployeePointListServiceImpl implements IEmployeePointListService{
+
+	@Autowired
+	private EmployeePointListMapper eplMapper;
+	
+	@Override
+	public ResponseResult<EmployeePointListVo> getAllPoints(EmployeeVo vo) {
+		return eplMapper.findAllPoints(vo);
+	}
+
+}

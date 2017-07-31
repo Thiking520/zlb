@@ -1,0 +1,55 @@
+package com.zhilianbao.erp.auth.mapper.parameter;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.parameter.SystemParamBean;
+import com.zhilianbao.erp.auth.vo.parameter.SystemParamVo;
+import com.zhilianbao.erp.common.entity.system.ParamBean;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+
+/**
+ * 
+ * @company zhilianbao
+ * @author kuangzengye
+ * @date   2017年3月7日下午3:18:30
+ * @description:系统全局参数数据库接口
+ */
+public interface SystemParamMapper extends BaseMapper<SystemParamBean> {
+	
+//    int deleteByPrimaryKey(Long id);
+    
+//    int deleteByPrimaryKeyAndType(@Param("type")String type, @Param("id")Long id);
+//
+//    int insertSelective(SystemParamBean record);
+//
+//    SystemParamBean selectByPrimaryKey(Long id);
+//
+//    int updateByPrimaryKeySelective(SystemParamBean record);
+//    
+    List<SystemParamVo> getPageByVo(@Param("vo") ViewSearchVo vo);
+    
+    /**
+     * 返回所有系统字典表数据
+     * @return
+     */
+    List<ParamBean> getAllList();
+
+    /**传入operatorId
+     * 返回七牛图片上传所需要的四条数据
+     * @param paramVo
+     * @return
+     */
+	List<SystemParamBean> findQiNiuParams(SystemParamBean paramVo);
+	
+	/***
+	 * 初始运营商para配置数据
+	 * @param list
+	 * @return
+	 */
+	public int insertBatchOperatorPara(List<SystemParamBean> list);
+    
+}

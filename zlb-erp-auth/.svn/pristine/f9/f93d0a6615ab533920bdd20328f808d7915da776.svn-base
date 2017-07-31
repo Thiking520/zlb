@@ -1,0 +1,37 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsPropertyListBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPropertyListVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPropertyVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 商品和商品属性中间表
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:34:24
+ */
+public interface GoodsPropertyListMapper extends BaseMapper<GoodsPropertyListBean> {
+	
+//	GoodsPropertyListVo queryById(Long id);
+	
+	/**
+	 * 根据goods_id获取属性数据
+	 * @param id
+	 * @return ：List<GoodsPropertyListVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午6:58:46
+	 */
+//	List<GoodsPropertyListVo> getPropertyListByGoodsId(Long id);
+
+	/**
+	 * 根据property_id获取属性数据
+	 * @param vo
+	 * @return ：List<GoodsPropertyListVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午6:58:43
+	 */
+	List<GoodsPropertyListVo> getListByPropertyId(GoodsPropertyVo vo);
+}

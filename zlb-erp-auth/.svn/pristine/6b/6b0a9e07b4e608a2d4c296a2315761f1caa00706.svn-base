@@ -1,0 +1,47 @@
+package com.zhilianbao.erp.auth.vo.user;
+
+import com.zhilianbao.erp.common.vo.BaseVo;
+
+public class LoginMenuVo extends BaseVo {
+
+	private static final long serialVersionUID = 1L;
+	/**菜单/功能名称*/
+	private String menuName;
+	private String menuUrl;
+	private String menuIcon;
+	private Long parentId;
+	private Integer menuType;
+	
+	public String getMenuName() {
+		return menuName;
+	}
+	public void setMenuName(String menuName) {
+		this.menuName = menuName;
+	}
+	public String getMenuUrl() {
+		return menuUrl;
+	}
+	public void setMenuUrl(String menuUrl) {
+		this.menuUrl = menuUrl;
+	}
+	public String getMenuIcon() {
+		return menuIcon;
+	}
+	public void setMenuIcon(String menuIcon) {
+		this.menuIcon = menuIcon;
+	}
+	public Long getParentId() {
+		return parentId;
+	}
+	public void setParentId(Long parentId) {
+		this.parentId = parentId;
+	}
+	public Integer getMenuType() {
+		return menuType;
+	}
+	public void setMenuType(Integer menuType) {
+		this.menuType = menuType;
+	}
+	
+
+}

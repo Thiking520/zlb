@@ -1,0 +1,23 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsPriceBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPriceVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 商品价格
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:33:56
+ */
+public interface GoodsPriceMapper extends BaseMapper<GoodsPriceBean> {
+
+	/**
+	 * 根据goodsId获取价格信息
+	 * @param id
+	 * @return ：GoodsPriceVo
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午6:57:38
+	 */
+	GoodsPriceVo getPriceByGoodsId(Long id);
+}

@@ -1,0 +1,56 @@
+package com.zhilianbao.erp.auth.mapper.cars;
+
+import java.util.List;
+import java.util.Map;
+
+import com.zhilianbao.erp.auth.entity.cars.CarsBean;
+import com.zhilianbao.erp.auth.vo.cars.CarsVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+public interface CarsMapper extends BaseMapper<CarsBean>{
+	/**
+	 * 分页查询车辆
+	 * @Title:CarsMapper
+	 * @author wangshengxia
+	 * @date 2017年4月6日上午10:58:53
+	 * @param map
+	 * @return
+	 */
+	public List<CarsVo> findByPage(Map<String, Object> map);
+	
+	/**
+	 * 查询最大的ID
+	 * @Title:CarsMapper
+	 * @author wangshengxia
+	 * @date 2017年4月6日上午10:59:17
+	 * @return
+	 */
+	public String findMaxCarId();
+	/**
+	 * 查询详情
+	 * @Title:CarsMapper
+	 * @author wangshengxia 
+	 * @date 2017年4月6日上午11:01:08
+	 * @param carsBean
+	 * @return
+	 */
+	public CarsVo queryCarDetail(CarsBean carsBean);
+	
+	/**
+	 * 通过车辆ID查询车辆详情 
+	 * @Title:CarsMapper
+	 * @author wangshengxia
+	 * @date 2017年4月6日上午11:01:38
+	 * @param carsBean
+	 * @return
+	 */
+	public CarsVo queryCarDetailsByCarId(CarsBean carsBean);
+
+	/**
+	 * 通过车牌号判断是否存在
+	 * @param vo
+	 * @return
+	 */
+	public List<CarsVo> findIsExistByPlate(CarsVo vo);
+	
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsTagMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsTagVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="tag_name" property="tagName" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="BIT" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, operator_id, tag_name, create_time, creator, update_time, modifier, deleted
+  </sql>
+  
+  <!-- 分页查询 -->
+  <select id="queryListByPage" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> FROM t_goods_tag tag where tag.deleted = 0 and tag.operator_id = #{operatorId}
+  	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND tag.tag_name like concat('%',#{searchKeyword},'%')
+  	</if>
+  	ORDER BY tag.create_time desc
+  </select>
+  
+  <!-- 商品标签，删除操作时，查询要删除的t_goods_tag有没有被引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+  	SELECT COUNT(*) from t_goods_tag_list list where list.tag_id in 
+  	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+	   	#{item}
+	</foreach>
+  </select>
+</mapper>

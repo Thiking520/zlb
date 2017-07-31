@@ -1,0 +1,13 @@
+package com.zhilianbao.erp.auth.mapper.employee;
+
+import com.zhilianbao.erp.auth.entity.employee.EmployeeAccountsListBean;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeAccountsListVo;
+
+import tk.mybatis.mapper.common.Mapper;
+
+public interface EmployeeAccountsListMapper extends Mapper<EmployeeAccountsListBean> {
+
+	EmployeeAccountsListVo findByAccount(EmployeeAccountsListVo eaListVo);
+
+	EmployeeAccountsListVo findById(EmployeeAccountsListVo userRoleVo);
+}

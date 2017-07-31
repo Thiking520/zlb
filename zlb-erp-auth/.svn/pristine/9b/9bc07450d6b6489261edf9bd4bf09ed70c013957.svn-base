@@ -1,0 +1,14 @@
+package com.zhilianbao.erp.auth.mapper.user;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.user.MenuBean;
+import com.zhilianbao.erp.auth.vo.user.MenuVo;
+import com.zhilianbao.erp.auth.vo.user.RoleMenuListVo;
+
+import tk.mybatis.mapper.common.Mapper;
+
+public interface MenuMapper extends Mapper<MenuBean> {
+
+	List<MenuVo> findAll(RoleMenuListVo vo);
+}

@@ -1,0 +1,210 @@
+package com.zhilianbao.erp.auth.impl.employee;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.employee.EmployeeBean;
+import com.zhilianbao.erp.auth.entity.user.OperatorCompanyBean;
+import com.zhilianbao.erp.auth.mapper.employee.EmployeeAccountsListMapper;
+import com.zhilianbao.erp.auth.mapper.employee.EmployeeMapper;
+import com.zhilianbao.erp.auth.service.employee.IEmployeeService;
+import com.zhilianbao.erp.auth.service.parameter.ISystemDictService;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeAccountsListVo;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeSearchVo;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeVo;
+import com.zhilianbao.erp.auth.vo.parameter.rpc.DictVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
+
+@Service
+public class EmployeeServiceImpl implements IEmployeeService{
+	
+	private static Logger logger=LogManager.getLogger(EmployeeServiceImpl.class);
+	
+	@Autowired
+	private EmployeeMapper employeeMapper;
+	@Autowired
+	private ISystemDictService systemDictService;
+	
+	@Autowired
+	private EmployeeAccountsListMapper ealMapper;
+	
+	
+	@Override
+	public ResponseResult<Page<EmployeeVo>> queryEmployeeByPage(EmployeeSearchVo vo) {
+		ResponseResult<Page<EmployeeVo>> respResult = new ResponseResult<Page<EmployeeVo>>();
+		Page<EmployeeVo> page = new Page<EmployeeVo>();
+		respResult.setData(page);
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("vo", vo);
+			List<EmployeeVo> list = employeeMapper.findByPage(map);
+			//查找已经创建的帐号
+			EmployeeAccountsListVo ealVo = new EmployeeAccountsListVo();
+			ealVo.setOperatorId(vo.getOperatorId());
+			List<EmployeeAccountsListVo> ealList = ealMapper.findAllByOperatorId(ealVo);
+			long count = list.size();
+			for (int i = 0; i < list.size(); i++) {
+				for (EmployeeAccountsListVo employeeAccountsListVo : ealList) {
+					if((long)list.get(i).getId() == (long)employeeAccountsListVo.getEmployeeId()) {
+						list.remove(i);
+						count--;
+					}
+				}
+			}
+			PageInfo<EmployeeVo> pageInfo = new PageInfo<EmployeeVo>(list);
+			long total = count;// 获取数据库中的总条数
+			List<EmployeeVo> carsList = pageInfo.getList();// 推荐使用这个获取结果集
+
+			page.setTotal(total);
+			page.setRows(carsList);
+			return respResult.success(page);
+		} catch (Exception e) {
+			logger.error("通过条件查询员工列表出错!id={}", vo, e);
+			return respResult.err();
+		}
+	}
+
+	@Override
+	public ResponseResult<EmployeeVo> queryEmployeeDetails(EmployeeVo key) {
+		ResponseResult<EmployeeVo> respResult=new ResponseResult<EmployeeVo>();
+		try{
+			EmployeeBean empBean=new EmployeeBean();
+			empBean.setId(key.getId());
+			EmployeeVo empVo=  employeeMapper.queryEmpDetail(empBean);
+			respResult.setData(empVo);
+		}catch(Exception e){
+			logger.error("通过ID查询员工详情出错!id={}",key.getId(), e);
+			return new ResponseResult<EmployeeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+	
+
+	@Override
+	public ResponseResult<EmployeeVo> addEmployee(EmployeeVo vo) {
+		
+		ResponseResult<EmployeeVo> respResult=new ResponseResult<EmployeeVo>();
+		EmployeeBean empBean=new EmployeeBean();
+		try{
+			PropertyUtils.copyProperties(empBean, vo);
+			empBean.setId(null);
+			employeeMapper.insertSelective(empBean);
+			//logger.error("新添加员工ID",empBean.getId());
+			String newKey="EA";
+			String strId = String.valueOf(empBean.getId());
+	        String add0="";
+			for (int i = 0; i < 5-strId.length(); i++) {
+				add0+="0";
+			}
+			newKey=newKey+add0+strId;
+			EmployeeBean empBean2=new EmployeeBean();
+			empBean2.setId(empBean.getId());
+			empBean2.setUniqueKey(newKey);
+			employeeMapper.updateByPrimaryKeySelective(empBean2);
+		}catch(Exception e){
+			logger.error("添加员工数据出错!",empBean, e);
+			return new ResponseResult<EmployeeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<EmployeeVo> updateEmployee(EmployeeVo vo) {
+		ResponseResult<EmployeeVo> respResult=new ResponseResult<EmployeeVo>();
+		try{
+			EmployeeBean empBean=new EmployeeBean();
+			PropertyUtils.copyProperties(empBean, vo);
+			empBean.setUpdateTime(new Date());
+			employeeMapper.updateByPrimaryKeySelective(empBean);
+		}catch(Exception e){
+			logger.error("员工更新数据出错{}",vo, e);
+			return new ResponseResult<EmployeeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<EmployeeVo> deleteEmployee(EmployeeVo vo) {
+		ResponseResult<EmployeeVo> respResult=new ResponseResult<EmployeeVo>();
+		try{
+			EmployeeBean empBean=new EmployeeBean();
+			empBean.setId(vo.getId());
+			empBean.setDeleted(true);
+			empBean.setUpdateTime(new Date());
+			//employeeMapper.deleteByPrimaryKey(empBean);
+			employeeMapper.updateByPrimaryKeySelective(empBean);
+		}catch(Exception e){
+			logger.error("员工删除数据出错{}",vo, e);
+			return new ResponseResult<EmployeeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<EmployeeVo> updateEmployeeStatus(EmployeeVo vo) {
+		ResponseResult<EmployeeVo> respResult=new ResponseResult<EmployeeVo>();
+		try{
+			EmployeeBean empBean=new EmployeeBean();
+			Iterable<String> ids=vo.getIds();
+			Example example=new Example(EmployeeBean.class);
+			Criteria criteria = example.createCriteria();
+		    criteria.andIn("id", ids);
+			empBean.setEnabled(vo.getEnabled());
+			empBean.setUpdateTime(new Date());
+			empBean.setModifier(vo.getModifier());
+			employeeMapper.updateByExampleSelective(empBean,example);
+		}catch(Exception e){
+			logger.error("员工更新数据出错{}",vo, e);
+			return new ResponseResult<EmployeeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<Map<String, Object>> initDropDownBox(Long operatorId) {
+		ResponseResult<Map<String,Object>> respResult=new ResponseResult<Map<String,Object>>();
+		try{
+			List<DictVo> kindredIdList=systemDictService.getDictList(operatorId, Constants.AUTH_KINDRED_ID).getData();
+			List<DictVo> occupationIdList=systemDictService.getDictList(operatorId, Constants.AUTH_OCCUPATION_ID).getData();
+			List<DictVo> commonActiveList=systemDictService.getDictList(operatorId, Constants.TYPE_COMMON_ACTIVE).getData();
+			Map<String,Object> map=new HashMap<String,Object>();
+			map.put("kindredIdList", kindredIdList);
+			map.put("occupationIdList", occupationIdList);
+			map.put("commonActiveList", commonActiveList);
+			respResult.setData(map);
+		}catch(Exception e){
+			logger.error("此运营商查询列表出错!id={}",operatorId, e);
+			return new ResponseResult<Map<String,Object>>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public EmployeeVo findEmployeeByMobileNo(String mobileNo) {
+		
+		return employeeMapper.findByMobileNo(mobileNo);
+	}
+
+	@Override
+	public List<EmployeeVo> mobileIsExist(EmployeeVo vo) {
+		
+		return employeeMapper.mobileIsExist(vo);
+	}
+}

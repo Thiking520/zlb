@@ -1,0 +1,36 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsMaterialListBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialListVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 商品相册/商品详情
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:33:30
+ */
+public interface GoodsMaterialListMapper extends BaseMapper<GoodsMaterialListBean> {
+	
+	/**
+	 * 根据goodsId获取商品相册
+	 * @param vo
+	 * @return ：List<GoodsMaterialListVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:58:45
+	 */
+	List<GoodsMaterialListVo> getMaterialListByGoodsId(GoodsMaterialListVo vo);
+
+	/**
+	 * 商品素材，删除操作时，查询要删除的t_goods_material有没有被引用
+	 * @param deleteIds
+	 * @return ：int
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:57:59
+	 */
+	int getCountByDeleteIds(@Param("deleteIds")Long[] deleteIds);
+}

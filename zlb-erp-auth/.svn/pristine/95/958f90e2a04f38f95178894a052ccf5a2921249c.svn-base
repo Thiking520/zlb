@@ -1,0 +1,161 @@
+package com.zhilianbao.erp.auth.entity.goods;
+
+import java.io.Serializable;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+import com.zhilianbao.erp.common.util.LogBeanNoNullStyle;
+
+@Table(name = "t_goods_material")
+public class GoodsMaterialBean extends BaseBean implements Serializable{
+	private static final long serialVersionUID = 671606311057393022L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long goodsType;
+    private Long operatorId;//运营商ID，默认0
+    private Integer fileType;//文件类型 0 图片 1 视频
+    private String fileName;//文件名
+    private String fileUrl;//文件URL
+	
+	/** 
+	 * 获取
+	 * @return id 
+	 */
+	public Long getId() {
+		return id;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param id 
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+
+	/** 
+	 * 获取
+	 * @return goodsType 
+	 */
+	public Long getGoodsType() {
+		return goodsType;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param goodsType 
+	 */
+	public void setGoodsType(Long goodsType) {
+		this.goodsType = goodsType;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return operatorId 
+	 */
+	public Long getOperatorId() {
+		return operatorId;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param operatorId 
+	 */
+	public void setOperatorId(Long operatorId) {
+		this.operatorId = operatorId;
+	}
+
+	
+
+	/** 
+	 * 获取
+	 * @return fileType 
+	 */
+	public Integer getFileType() {
+		return fileType;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param fileType 
+	 */
+	public void setFileType(Integer fileType) {
+		this.fileType = fileType;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return fileName 
+	 */
+	public String getFileName() {
+		return fileName;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param fileName 
+	 */
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return fileUrl 
+	 */
+	public String getFileUrl() {
+		return fileUrl;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param fileUrl 
+	 */
+	public void setFileUrl(String fileUrl) {
+		this.fileUrl = fileUrl;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return serialversionuid 
+	 */
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, new LogBeanNoNullStyle());
+	}
+}

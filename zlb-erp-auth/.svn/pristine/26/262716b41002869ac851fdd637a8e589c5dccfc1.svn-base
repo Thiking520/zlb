@@ -1,0 +1,251 @@
+package com.zhilianbao.erp.auth.entity.cars;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+
+@Table(name="t_cars")
+public class CarsBean extends BaseBean implements Serializable{
+	
+	private static final long serialVersionUID = 671606311057393022L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	@Column(name="car_id")
+	private String carId;
+	
+	@Column(name="operator_id")
+	private Long operatorId;
+	
+	@Column(name="car_number")
+	private String carNumber;
+	
+	private Integer enabled;
+	
+	private String province;
+	
+	private String city;
+	
+	private BigDecimal weight;
+	
+	private BigDecimal length;
+	
+	private BigDecimal width;
+	
+	private BigDecimal high;
+	
+	private BigDecimal volume;
+	
+	@Column(name="car_type")
+	private String carType;
+	
+	private String region;
+	
+	@Column(name="self_support")
+	private String selfSupport;
+	
+	@Column(name="is_transport_liquid")
+	private Integer isTransportLiquid;
+	
+	@Column(name="is_transport_freezing")
+	private Integer isTransportFreezing;
+	
+	@Column(name="is_transport_storage")
+	private Integer isTransportStorage;
+	
+	private Long driver;
+	
+	private String custom1;
+	
+	private String custom2;
+	
+	private String describes;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getCarId() {
+		return carId;
+	}
+
+	public void setCarId(String carId) {
+		this.carId = carId;
+	}
+
+	
+
+	public String getCarNumber() {
+		return carNumber;
+	}
+
+	public void setCarNumber(String carNumber) {
+		this.carNumber = carNumber;
+	}
+
+	public Integer getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Integer enabled) {
+		this.enabled = enabled;
+	}
+
+	public String getProvince() {
+		return province;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public BigDecimal getWeight() {
+		return weight;
+	}
+
+	public void setWeight(BigDecimal weight) {
+		this.weight = weight;
+	}
+
+	public BigDecimal getLength() {
+		return length;
+	}
+
+	public void setLength(BigDecimal length) {
+		this.length = length;
+	}
+
+	public BigDecimal getWidth() {
+		return width;
+	}
+
+	public void setWidth(BigDecimal width) {
+		this.width = width;
+	}
+
+	public BigDecimal getHigh() {
+		return high;
+	}
+
+	public void setHigh(BigDecimal high) {
+		this.high = high;
+	}
+
+	public BigDecimal getVolume() {
+		return volume;
+	}
+
+	public void setVolume(BigDecimal volume) {
+		this.volume = volume;
+	}
+
+	public String getCarType() {
+		return carType;
+	}
+
+	public void setCarType(String carType) {
+		this.carType = carType;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public String getSelfSupport() {
+		return selfSupport;
+	}
+
+	public void setSelfSupport(String selfSupport) {
+		this.selfSupport = selfSupport;
+	}
+
+	public Integer getIsTransportLiquid() {
+		return isTransportLiquid;
+	}
+
+	public void setIsTransportLiquid(Integer isTransportLiquid) {
+		this.isTransportLiquid = isTransportLiquid;
+	}
+
+	public Integer getIsTransportFreezing() {
+		return isTransportFreezing;
+	}
+
+	public void setIsTransportFreezing(Integer isTransportFreezing) {
+		this.isTransportFreezing = isTransportFreezing;
+	}
+
+	public Integer getIsTransportStorage() {
+		return isTransportStorage;
+	}
+
+	public void setIsTransportStorage(Integer isTransportStorage) {
+		this.isTransportStorage = isTransportStorage;
+	}
+
+	public Long getOperatorId() {
+		return operatorId;
+	}
+
+	public void setOperatorId(Long operatorId) {
+		this.operatorId = operatorId;
+	}
+
+	public Long getDriver() {
+		return driver;
+	}
+
+	public void setDriver(Long driver) {
+		this.driver = driver;
+	}
+
+	public String getCustom1() {
+		return custom1;
+	}
+
+	public void setCustom1(String custom1) {
+		this.custom1 = custom1;
+	}
+
+	public String getCustom2() {
+		return custom2;
+	}
+
+	public void setCustom2(String custom2) {
+		this.custom2 = custom2;
+	}
+
+	public String getDescribes() {
+		return describes;
+	}
+
+	public void setDescribes(String describes) {
+		this.describes = describes;
+	}
+	
+}

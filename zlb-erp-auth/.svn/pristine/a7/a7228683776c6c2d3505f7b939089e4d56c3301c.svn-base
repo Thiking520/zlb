@@ -1,0 +1,177 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsTypeBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsTypeMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsTypeService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsTypeVo;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+import tk.mybatis.mapper.entity.Example;
+
+/**
+ * 商品分类业务处理类
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月1日 下午3:39:47
+ */
+@Service
+public class GoodsTypeServiceImpl implements IGoodsTypeService {
+	private static Logger logger=LogManager.getLogger(GoodsTypeServiceImpl.class);
+	
+	@Autowired
+	private GoodsTypeMapper goodsTypeMapper;
+
+	@Override
+	public List<Map<String, Object>> goodsTypeTree(ViewSearchVo vo) {
+		List<Map<String, Object>> rspResult;
+		try {
+			GoodsTypeVo goodsTypeVo = new GoodsTypeVo();
+			goodsTypeVo.setOperatorId(vo.getOperatorId());
+			List<GoodsTypeVo> list = goodsTypeMapper.goodsTypeTree(goodsTypeVo);
+			if (CollectionUtils.isEmpty(list)) {
+				return new ArrayList<Map<String, Object>>();
+			}
+			rspResult = buildTree(0L, list);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品类型】查询所有出错{}",vo,e);
+			return new ArrayList<Map<String, Object>>();
+		}
+		return rspResult;
+	}
+
+	private List<Map<String, Object>> buildTree(Long parentId, List<GoodsTypeVo> typeList) {
+        List<Map<String, Object>> alists = new ArrayList<Map<String, Object>>();//父节点表
+		//拼装子节点     
+		for (GoodsTypeVo vo : typeList) {
+			if(parentId.equals(vo.getParentId())) {
+			    Map<String, Object> node = new HashMap<String, Object>();   
+			    //子节点id
+			    node.put("id", vo.getId().toString());
+			    //节点的父节点，这里不能用parentId，在前端显示就不正确了，有可能树形控件本身有parentId属性
+			    node.put("typeParentId", vo.getParentId());
+			    //节点名字
+			    node.put("text", vo.getTypeName());
+			    node.put("typeDesc", vo.getTypeDesc());
+			    node.put("sortIndex", vo.getSortIndex());
+			    node.put("enabled", vo.getEnabled());
+			    node.put("imageUrl", vo.getImageUrl());
+			    
+	            List<Map<String, Object>> children = buildTree(vo.getId(), typeList);
+	            if(children != null && children.size() > 0)
+	            	node.put("nodes", children);
+	            alists.add(node);
+            }
+        }
+        return alists;
+    }
+
+	@Override
+	public ResponseResult<GoodsTypeVo> addGoodsType(GoodsTypeVo vo) {
+		ResponseResult<GoodsTypeVo> rspResult = new ResponseResult<GoodsTypeVo>();
+		GoodsTypeBean bean = new GoodsTypeBean();
+		try {
+			PropertyUtils.copyProperties(bean,vo);
+			goodsTypeMapper.insertSelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品类型】新增出错{}",bean, e);
+			return new ResponseResult<GoodsTypeVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsTypeVo> deleteGoodsType(GoodsTypeVo vo) {
+		ResponseResult<GoodsTypeVo> rspResult = new ResponseResult<GoodsTypeVo>();
+		try {
+			// 判断是否被引用
+			Long [] deleteIds = new Long[1];//现在是单个删除，以后可能批量删除
+			deleteIds[0] = vo.getId();
+			int count = goodsTypeMapper.getCountByDeleteIds(deleteIds);
+			if(count > 0)
+				return new ResponseResult<GoodsTypeVo>(ResultEnum.IN_USE);
+			
+			GoodsTypeBean bean = new GoodsTypeBean();
+			bean.setId(vo.getId());
+			bean.setDeleted(true);
+			goodsTypeMapper.updateByPrimaryKeySelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品类型】删除出错,id={}",vo.getId(), e);
+			return new ResponseResult<GoodsTypeVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsTypeVo> updateGoodsType(GoodsTypeVo vo) {
+		ResponseResult<GoodsTypeVo> rspResult = new ResponseResult<GoodsTypeVo>();
+		try {
+			GoodsTypeBean bean = new GoodsTypeBean();
+			PropertyUtils.copyProperties(bean, vo);
+			goodsTypeMapper.updateByPrimaryKeySelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品类型】修改出错{}",vo, e);
+			return new ResponseResult<GoodsTypeVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	/**
+	 * 获取运营商下的所有商品二级分类
+	 */
+	@Override
+	public List<GoodsTypeVo> goodsTypeSecondLevel(String operatorId) {
+		
+		Example example = new Example(GoodsTypeBean.class);
+		Example.Criteria criteria = example.createCriteria();
+
+		if (operatorId!=null && !"".equals(operatorId)) {
+			criteria.andEqualTo("operatorId", operatorId);
+		}
+		
+		//需求改了，一级分类也要
+//		//类型二级分类
+//		criteria.andNotEqualTo("parentId", 0);
+
+		//没有删除的
+		criteria.andEqualTo("deleted", false);
+
+		// 排序
+		example.setOrderByClause("parent_id" + " " + "asc");
+		
+		List<GoodsTypeBean> goodTypeBeans = goodsTypeMapper.selectByExample(example);
+		
+		//声明返回类型vo集合
+		List<GoodsTypeVo> list = new ArrayList<GoodsTypeVo>();
+		//将每个查询到的goodsType实体数据，克隆到vo中，并添加到集合，用于作返回值
+		for (GoodsTypeBean goodsItem : goodTypeBeans) {
+			GoodsTypeVo vo = new GoodsTypeVo();
+			//将第二个克隆到第一个参数
+			try {
+				PropertyUtils.copyProperties(vo, goodsItem);
+			} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				logger.error("【获取运营商下的所有商品二级分类】查询出错{}",operatorId, e);
+			}
+			list.add(vo);
+		}
+		return list;
+	}
+	
+	
+}

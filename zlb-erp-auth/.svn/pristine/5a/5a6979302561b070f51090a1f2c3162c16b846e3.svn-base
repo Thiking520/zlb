@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsMaterialMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsMaterialVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="goods_type" property="goodsType" jdbcType="BIGINT" />
+    <result column="file_type" property="fileType" jdbcType="BIT" />
+    <result column="file_name" property="fileName" jdbcType="VARCHAR" />
+    <result column="file_url" property="fileUrl" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="BIT" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, operator_id, goods_type, file_type, file_name, file_url, create_time, creator, 
+    update_time, modifier, deleted
+  </sql>
+  
+  <!-- 分页查询 -->
+  <select id="queryListByPage" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> FROM t_goods_material material where material.deleted = 0 and material.operator_id = #{operatorId} 
+  	<if test="goodsTypeIds != null and goodsTypeIds.size() > 0 ">
+	  	and material.goods_type in 
+	  	<foreach collection="goodsTypeIds" item="item" index="index" open="(" separator="," close=")" >
+	   		#{item}
+	   	</foreach>
+	</if>
+   	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND material.file_name like concat('%',#{searchKeyword},'%')
+  	</if>
+   	ORDER BY material.create_time desc
+  </select>
+  
+  <!-- 商品素材，删除操作时，查询要删除的t_goods_material有没有被引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+  	SELECT COUNT(*) from t_goods_material_list list where list.material_id in 
+  		<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+	   		#{item}
+	   	</foreach>
+  </select>
+</mapper>

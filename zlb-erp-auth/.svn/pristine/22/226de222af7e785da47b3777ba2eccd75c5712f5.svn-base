@@ -1,0 +1,257 @@
+package com.zhilianbao.erp.auth.entity.user;
+
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Table(name = "t_global_variable_parameter")
+public class GlobalVariableParameterBean {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * 参数键值，唯一
+     */
+    @Column(name = "parameter_key")
+    private String parameterKey;
+
+    /**
+     * 参数值
+     */
+    @Column(name = "parameter_value")
+    private String parameterValue;
+
+    /**
+     * 参数描述
+     */
+    private String description;
+
+    /**
+     * 参数排序值，数值大靠前
+     */
+    @Column(name = "parameter_order")
+    private Long parameterOrder;
+
+    /**
+     * 启用/禁用状态，true启用，false禁用
+     */
+    private Boolean enabled;
+
+    /**
+     * 本条记录创建者ID
+     */
+    private Long creator;
+
+    /**
+     * 本条记录修改者ID
+     */
+    private Long modifier;
+
+    /**
+     * 本纪录创建时间
+     */
+    @Column(name = "create_time")
+    private Date createTime;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    /**
+     * 是否删除，为true表示已删除
+     */
+    private Boolean deleted;
+
+    /**
+     * @return id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取参数键值，唯一
+     *
+     * @return parameter_key - 参数键值，唯一
+     */
+    public String getParameterKey() {
+        return parameterKey;
+    }
+
+    /**
+     * 设置参数键值，唯一
+     *
+     * @param parameterKey 参数键值，唯一
+     */
+    public void setParameterKey(String parameterKey) {
+        this.parameterKey = parameterKey;
+    }
+
+    /**
+     * 获取参数值
+     *
+     * @return parameter_value - 参数值
+     */
+    public String getParameterValue() {
+        return parameterValue;
+    }
+
+    /**
+     * 设置参数值
+     *
+     * @param parameterValue 参数值
+     */
+    public void setParameterValue(String parameterValue) {
+        this.parameterValue = parameterValue;
+    }
+
+    /**
+     * 获取参数描述
+     *
+     * @return description - 参数描述
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * 设置参数描述
+     *
+     * @param description 参数描述
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * 获取参数排序值，数值大靠前
+     *
+     * @return parameter_order - 参数排序值，数值大靠前
+     */
+    public Long getParameterOrder() {
+        return parameterOrder;
+    }
+
+    /**
+     * 设置参数排序值，数值大靠前
+     *
+     * @param parameterOrder 参数排序值，数值大靠前
+     */
+    public void setParameterOrder(Long parameterOrder) {
+        this.parameterOrder = parameterOrder;
+    }
+
+    /**
+     * 获取启用/禁用状态，true启用，false禁用
+     *
+     * @return enabled - 启用/禁用状态，true启用，false禁用
+     */
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    /**
+     * 设置启用/禁用状态，true启用，false禁用
+     *
+     * @param enabled 启用/禁用状态，true启用，false禁用
+     */
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * 获取本条记录创建者ID
+     *
+     * @return creator - 本条记录创建者ID
+     */
+    public Long getCreator() {
+        return creator;
+    }
+
+    /**
+     * 设置本条记录创建者ID
+     *
+     * @param creator 本条记录创建者ID
+     */
+    public void setCreator(Long creator) {
+        this.creator = creator;
+    }
+
+    /**
+     * 获取本条记录修改者ID
+     *
+     * @return modifier - 本条记录修改者ID
+     */
+    public Long getModifier() {
+        return modifier;
+    }
+
+    /**
+     * 设置本条记录修改者ID
+     *
+     * @param modifier 本条记录修改者ID
+     */
+    public void setModifier(Long modifier) {
+        this.modifier = modifier;
+    }
+
+    /**
+     * 获取本纪录创建时间
+     *
+     * @return create_time - 本纪录创建时间
+     */
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置本纪录创建时间
+     *
+     * @param createTime 本纪录创建时间
+     */
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    /**
+     * 获取是否删除，为true表示已删除
+     *
+     * @return deleted - 是否删除，为true表示已删除
+     */
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    /**
+     * 设置是否删除，为true表示已删除
+     *
+     * @param deleted 是否删除，为true表示已删除
+     */
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+}

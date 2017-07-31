@@ -1,0 +1,275 @@
+package com.zhilianbao.erp.auth.impl.archives;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.archives.DeliveryScopeBean;
+import com.zhilianbao.erp.auth.mapper.archives.DeliveryScopeMapper;
+import com.zhilianbao.erp.auth.service.archives.IDeliveryScopeService;
+import com.zhilianbao.erp.auth.vo.archives.DeliveryScopeSearchVo;
+import com.zhilianbao.erp.auth.vo.archives.DeliveryScopeVo;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+/**
+ * 
+ * @author wangshengxia
+ *
+ */
+@Service
+public class DeliveryScopeServiceImpl implements IDeliveryScopeService{
+	
+	private static Logger logger = LogManager.getLogger(DeliveryScopeServiceImpl.class);
+	@Autowired
+	private DeliveryScopeMapper deliveryScopeMapper;
+	
+	/**
+	 *通过站点查找范围
+	 */
+	@Override
+	public ResponseResult<Page<DeliveryScopeVo>> queryDeliveryScope(DeliveryScopeSearchVo vo) {
+		ResponseResult<Page<DeliveryScopeVo>> respResult = new ResponseResult<Page<DeliveryScopeVo>>();
+		Page<DeliveryScopeVo> page = new Page<DeliveryScopeVo>();
+		respResult.setData(page);
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("vo", vo);
+			List<DeliveryScopeVo> list = deliveryScopeMapper.queryDeliveryScopes(map);
+			PageInfo<DeliveryScopeVo> pageInfo = new PageInfo<DeliveryScopeVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<DeliveryScopeVo> dsList = pageInfo.getList();// 推荐使用这个获取结果集
+
+			page.setTotal(total);
+			page.setRows(dsList);
+			return respResult.success(page);
+		} catch (Exception e) {
+			logger.error("通过条件查询站点范围列表出错!id={}", vo, e);
+			return respResult.err();
+		}
+	}
+	@Override
+	public ResponseResult<DeliveryScopeVo> queryDeliveryScopeDetails(DeliveryScopeVo vo) {
+		ResponseResult<DeliveryScopeVo> respResult=new ResponseResult<DeliveryScopeVo>();
+		try{
+			DeliveryScopeBean ds=new DeliveryScopeBean();
+			ds.setId(vo.getId());
+			DeliveryScopeVo cb=deliveryScopeMapper.queryDeliveryScopeDetails(ds);
+			respResult.setData(cb);
+		}catch(Exception e){
+			logger.error("通过ID查询站点范围详情出错!id={}",vo.getId(), e);
+			return new ResponseResult<DeliveryScopeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+	@Override
+	public ResponseResult<DeliveryScopeVo> updateDeliveryScopeStatus(DeliveryScopeVo vo) {
+		ResponseResult<DeliveryScopeVo> respResult=new ResponseResult<DeliveryScopeVo>();
+		try{
+			DeliveryScopeBean ds=new DeliveryScopeBean();
+			ds.setId(vo.getId());
+			ds.setIsDelivery(vo.getIsDelivery());
+			ds.setUpdateTime(new Date());
+			deliveryScopeMapper.updateByPrimaryKeySelective(ds);
+		}catch(Exception e){
+			logger.error("通过ID更新站点范围数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<DeliveryScopeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+	@Override
+	public ResponseResult<DeliveryScopeVo> updateDeliveryScope(DeliveryScopeVo vo) {
+		ResponseResult<DeliveryScopeVo> respResult=new ResponseResult<DeliveryScopeVo>();
+		try{
+			DeliveryScopeBean ds=new DeliveryScopeBean();
+			ResponseResult<DeliveryScopeVo> checkResult = checkAddress(vo,ds);
+			if("0000".equals(checkResult.getCode())) {
+				ds.setUpdateTime(new Date());
+				ds.setDeliveryRecordType(null);
+				deliveryScopeMapper.updateByPrimaryKeySelective(ds);
+			} else {
+				return checkResult;
+			}
+		}catch(Exception e){
+			logger.error("通过ID更新站点范围数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<DeliveryScopeVo>(ResultEnum.SYS_ERR);
+		}
+		
+		return respResult;
+	}
+	@Override
+	public ResponseResult<DeliveryScopeVo> deleteDeliveryScope(DeliveryScopeVo vo) {
+		ResponseResult<DeliveryScopeVo> respResult=new ResponseResult<DeliveryScopeVo>();
+		try{
+			DeliveryScopeBean ds=new DeliveryScopeBean();
+			ds.setId(vo.getId());
+			ds.setDeleted(true);
+			ds.setUpdateTime(new Date());
+			deliveryScopeMapper.updateByPrimaryKeySelective(ds);
+		}catch(Exception e){
+			logger.error("通过ID删除站点范围数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<DeliveryScopeVo>(ResultEnum.SYS_ERR);
+		}
+		
+		
+		return respResult;
+	}
+	@Override
+	public ResponseResult<DeliveryScopeVo> addDeliveryScope(DeliveryScopeVo vo) {
+		ResponseResult<DeliveryScopeVo> respResult=new ResponseResult<DeliveryScopeVo>();
+		DeliveryScopeBean dsBean=new DeliveryScopeBean();
+		try{
+			ResponseResult<DeliveryScopeVo> checkResult = checkAddress(vo,dsBean);
+			if("0000".equals(checkResult.getCode())) {
+				dsBean.setDeliveryRecordType(null);
+				deliveryScopeMapper.insertSelective(dsBean);
+			} else {
+				return checkResult;
+			}
+			
+		}catch(Exception e){
+			logger.error("添加站点范围数据出错!",dsBean, e);
+			return new ResponseResult<DeliveryScopeVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+	
+	
+	public ResponseResult<DeliveryScopeVo> checkAddress(DeliveryScopeVo vo,DeliveryScopeBean dsBean) throws Exception {
+		PropertyUtils.copyProperties(dsBean, vo);
+		dsBean.setOperatorId(vo.getOperatorId());
+		dsBean.setId(null);
+		//定义站点范围Bean
+		/**
+		 * 1.先根据省查且其他市，区，街为空
+		 * 2.如果条件市不为空，则根据省，市查询 ，区，街，为空
+		 * 3.如果条件区不为空，根据省，市，区查询，街为空
+		 * 4，如果条件街不为空，根据省，市，区，街查询
+		 */
+		DeliveryScopeBean dsBean2=new DeliveryScopeBean();
+		dsBean2.setIsDelivery(dsBean.getIsDelivery());
+		dsBean2.setProvince(dsBean.getProvince());
+		dsBean2.setCity(dsBean.getCity());
+		dsBean2.setArea(dsBean.getArea());
+		dsBean2.setStreet(dsBean.getStreet());
+		dsBean2.setDeliveryRecordType(dsBean.getDeliveryRecordType());
+		dsBean2.setOperatorId(dsBean.getOperatorId());
+		List<DeliveryScopeVo> dslist = deliveryScopeMapper.queryDeliveryRecordByPCAS2(dsBean2);
+		for (int i = 0; i < dslist.size(); i++) {//判断当前插入的行政区域在数据库是否有比当前区域更小的范围
+			//比如已经存在“北京-北京市-东城区”的地址，再建“北京-北京市”的地址，将会提示此消息
+			
+			if(dslist.get(i).getProvince()!=null && (dsBean2.getProvince() == null || dsBean2.getProvince().equals(""))){
+				return new ResponseResult<DeliveryScopeVo>(ResultEnum.DATA_OCCUPY);
+			}else if(dslist.get(i).getCity()!=null && (dsBean2.getCity() == null || dsBean2.getCity().equals(""))){
+				return new ResponseResult<DeliveryScopeVo>(ResultEnum.DATA_OCCUPY);
+			}else if(dslist.get(i).getArea()!=null && (dsBean2.getArea() == null || dsBean2.getArea().equals(""))){
+				return new ResponseResult<DeliveryScopeVo>(ResultEnum.DATA_OCCUPY);
+			}else if(dslist.get(i).getStreet()!=null && (dsBean2.getStreet() == null || dsBean2.getStreet().equals(""))){
+				return new ResponseResult<DeliveryScopeVo>(ResultEnum.DATA_OCCUPY);
+			}
+		}
+		DeliveryScopeBean dsBean1=new DeliveryScopeBean();
+		dsBean1.setIsDelivery(dsBean.getIsDelivery());
+		dsBean1.setName(dsBean.getName());
+		dsBean1.setProvince(dsBean.getProvince());
+		dsBean1.setCity(null);
+		dsBean1.setArea(null);
+		dsBean1.setStreet(null);
+		dsBean1.setDeliveryRecordType(dsBean.getDeliveryRecordType());
+		dsBean1.setOperatorId(dsBean.getOperatorId());
+		int i1=deliveryScopeMapper.queryDeliveryRecordByPCAS(dsBean1);
+		if(i1>0){
+			return new ResponseResult<DeliveryScopeVo>(ResultEnum.ADDRESS_COVERD);
+		}else if(dsBean.getCity()!= null && !dsBean.getCity().equals("")){
+			dsBean1.setCity(dsBean.getCity());
+			int i2=deliveryScopeMapper.queryDeliveryRecordByPCAS(dsBean1);
+			if(i2>0){
+				return new ResponseResult<DeliveryScopeVo>(ResultEnum.ADDRESS_COVERD);
+			}else if(dsBean.getArea() != null && !dsBean.getCity().equals("")){
+				dsBean1.setArea(dsBean.getArea());
+				int i3=deliveryScopeMapper.queryDeliveryRecordByPCAS(dsBean1);
+				if(i3>0){
+					return new ResponseResult<DeliveryScopeVo>(ResultEnum.ADDRESS_COVERD);
+				}else if(dsBean.getStreet() != null && !dsBean.getStreet().equals("")){
+					dsBean1.setStreet(dsBean.getStreet());
+					int i4=deliveryScopeMapper.queryDeliveryRecordByPCAS(dsBean1);
+					if(i4>0){
+						//相同省市县街道名称重复
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.ADDRESS_COVERD);
+					}
+				}
+			}
+		}
+		//校验当前站点覆盖范围
+		//如果已经存在市/区/街道，将不能新建比它范围更小的和更大的
+		//当前站点范围列表
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("vo", vo);
+		List<DeliveryScopeVo> list = deliveryScopeMapper.findDeliveryScopes(vo);
+		if("10".equals(vo.getLevel())) {
+			//类型为市，判断是否存在比市范围更小的区域
+			for (DeliveryScopeVo deliveryScopeVo : list) {
+				if(deliveryScopeVo.getCity() != null) {
+					if((long)deliveryScopeVo.getCity() == (long)vo.getCity() && deliveryScopeVo.getArea() != null) {
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.CITY_COVERD);//该城市范围已经覆盖，请选择其它城市
+					}
+				} else {
+					//类型为市，如果市同一个省下存在市为空的，说明整个省都已经覆盖了
+					if(deliveryScopeVo.getProvince() != null && (long)deliveryScopeVo.getProvince() == (long)vo.getProvince()) {
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.PROVANCE_COVERED);//该省范围已经覆盖，请选择其它省
+					}
+				}
+			}
+		} else if("20".equals(vo.getLevel())) {
+			//类型为区，判断是否存在比区范围更小的区域或者是更大的区域
+			for (DeliveryScopeVo deliveryScopeVo : list) {
+				if(deliveryScopeVo.getArea() != null) {
+					//类型为区，街道不为空，说明已经存在更小的范围
+					if((long)deliveryScopeVo.getArea() == (long)vo.getArea() && (deliveryScopeVo.getStreet() != null)) {
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.AREA_COVERD);//该区域范围已经覆盖，请选择其它区
+					}
+				} else {
+					//类型为区，如果在同一个市下存在区为空，说明整个市都覆盖了
+					if(deliveryScopeVo.getCity() != null && (long)deliveryScopeVo.getCity() == (long)vo.getCity()) {
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.CITY_COVERD);//该城市范围已经覆盖，请选择其它城市
+					}
+				}
+			}
+		} else if("30".equals(vo.getLevel())) {
+			//类型为街道，判断是否存在比街道范围更大的区域
+			for (DeliveryScopeVo deliveryScopeVo : list) {
+				//在同一个省下
+				if((long)deliveryScopeVo.getProvince() == (long)vo.getProvince()) {
+					//如果市为空，整个省都覆盖了
+					if(deliveryScopeVo.getCity() == null) {
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.PROVANCE_COVERED);//该省范围已经覆盖，请选择其它省
+					} else if((long)deliveryScopeVo.getCity() == (long)vo.getCity() && deliveryScopeVo.getArea() == null) {
+						//如果区域为空，整个市都覆盖了
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.CITY_COVERD);//该城市范围已经覆盖，请选择其它城市
+					} else if((long)deliveryScopeVo.getArea() == (long)vo.getArea() && deliveryScopeVo.getStreet() == null) {
+						//如果街道为空，整个区都覆盖了
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.AREA_COVERD);//该区域范围已经覆盖，请选择其它区域
+					} else if (deliveryScopeVo.getStreet() == vo.getStreet()) {
+						//如果街道相同，这个街道覆盖
+						return new ResponseResult<DeliveryScopeVo>(ResultEnum.STREET_COVERD);//该街道范围已经覆盖，请选择其它街道
+					}
+				}
+			}
+		}
+		return new ResponseResult<DeliveryScopeVo>(ResultEnum.SUCCESSE);
+	}
+ 
+}
+ 

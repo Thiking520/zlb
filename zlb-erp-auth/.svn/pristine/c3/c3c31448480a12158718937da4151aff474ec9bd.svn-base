@@ -1,0 +1,328 @@
+package com.zhilianbao.erp.auth.entity.user;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+
+@Table(name = "t_menu")
+public class MenuBean extends BaseBean implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5926382866471209737L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * 菜单类型：1、文件夹；2、父级查询页面；3、功能按钮
+     */
+    @Column(name = "menu_type")
+    private Short menuType;
+
+    /**
+     * 菜单/功能名称
+     */
+    @Column(name = "menu_name")
+    private String menuName;
+
+    /**
+     * 父级ID
+     */
+    @Column(name = "parent_id")
+    private Long parentId;
+
+    /**
+     * 菜单/功能访问地址
+     */
+    @Column(name = "menu_url")
+    private String menuUrl;
+
+    /**
+     * 同级菜单排序值，数值大靠前
+     */
+    @Column(name = "menu_order")
+    private Long menuOrder;
+
+    /**
+     * 菜单图标
+     */
+    @Column(name = "menu_icon")
+    private String menuIcon;
+
+    /**
+     * 功能描述
+     */
+    private String description;
+
+    /**
+     * 启用/禁用状态，true启用，false禁用
+     */
+    private Boolean enabled;
+
+    /**
+     * 是否为私有菜单，如果是，只有运维才能看见
+     */
+    @Column(name = "isPrivate")
+    private Boolean isprivate;
+
+    /**
+     * 本纪录创建时间
+     */
+    @Column(name = "create_time")
+    private Date createTime;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    /**
+     * 是否删除，为true表示已删除
+     */
+    private Boolean deleted;
+    
+    /**模块类型***/
+    private Long moduleType;
+    /***模块url***/
+    private String moduleUrl;
+
+    /**
+     * @return id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取菜单类型：1、文件夹；2、父级查询页面；3、功能按钮
+     *
+     * @return menu_type - 菜单类型：1、文件夹；2、父级查询页面；3、功能按钮
+     */
+    public Short getMenuType() {
+        return menuType;
+    }
+
+    /**
+     * 设置菜单类型：1、文件夹；2、父级查询页面；3、功能按钮
+     *
+     * @param menuType 菜单类型：1、文件夹；2、父级查询页面；3、功能按钮
+     */
+    public void setMenuType(Short menuType) {
+        this.menuType = menuType;
+    }
+
+    /**
+     * 获取菜单/功能名称
+     *
+     * @return menu_name - 菜单/功能名称
+     */
+    public String getMenuName() {
+        return menuName;
+    }
+
+    /**
+     * 设置菜单/功能名称
+     *
+     * @param menuName 菜单/功能名称
+     */
+    public void setMenuName(String menuName) {
+        this.menuName = menuName;
+    }
+
+    /**
+     * 获取父级ID
+     *
+     * @return parent_id - 父级ID
+     */
+    public Long getParentId() {
+        return parentId;
+    }
+
+    /**
+     * 设置父级ID
+     *
+     * @param parentId 父级ID
+     */
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+    }
+
+    /**
+     * 获取菜单/功能访问地址
+     *
+     * @return menu_url - 菜单/功能访问地址
+     */
+    public String getMenuUrl() {
+        return menuUrl;
+    }
+
+    /**
+     * 设置菜单/功能访问地址
+     *
+     * @param menuUrl 菜单/功能访问地址
+     */
+    public void setMenuUrl(String menuUrl) {
+        this.menuUrl = menuUrl;
+    }
+
+    /**
+     * 获取同级菜单排序值，数值大靠前
+     *
+     * @return menu_order - 同级菜单排序值，数值大靠前
+     */
+    public Long getMenuOrder() {
+        return menuOrder;
+    }
+
+    /**
+     * 设置同级菜单排序值，数值大靠前
+     *
+     * @param menuOrder 同级菜单排序值，数值大靠前
+     */
+    public void setMenuOrder(Long menuOrder) {
+        this.menuOrder = menuOrder;
+    }
+
+    /**
+     * 获取菜单图标
+     *
+     * @return menu_icon - 菜单图标
+     */
+    public String getMenuIcon() {
+        return menuIcon;
+    }
+
+    /**
+     * 设置菜单图标
+     *
+     * @param menuIcon 菜单图标
+     */
+    public void setMenuIcon(String menuIcon) {
+        this.menuIcon = menuIcon;
+    }
+
+    /**
+     * 获取功能描述
+     *
+     * @return description - 功能描述
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * 设置功能描述
+     *
+     * @param description 功能描述
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * 获取启用/禁用状态，true启用，false禁用
+     *
+     * @return enabled - 启用/禁用状态，true启用，false禁用
+     */
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    /**
+     * 设置启用/禁用状态，true启用，false禁用
+     *
+     * @param enabled 启用/禁用状态，true启用，false禁用
+     */
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * 获取本纪录创建时间
+     *
+     * @return create_time - 本纪录创建时间
+     */
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置本纪录创建时间
+     *
+     * @param createTime 本纪录创建时间
+     */
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    /**
+     * 获取是否删除，为true表示已删除
+     *
+     * @return deleted - 是否删除，为true表示已删除
+     */
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    /**
+     * 设置是否删除，为true表示已删除
+     *
+     * @param deleted 是否删除，为true表示已删除
+     */
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+	public Long getModuleType() {
+		return moduleType;
+	}
+
+	public void setModuleType(Long moduleType) {
+		this.moduleType = moduleType;
+	}
+
+	public String getModuleUrl() {
+		return moduleUrl;
+	}
+
+	public void setModuleUrl(String moduleUrl) {
+		this.moduleUrl = moduleUrl;
+	}
+
+	public Boolean getIsprivate() {
+		return isprivate;
+	}
+
+	public void setIsprivate(Boolean isprivate) {
+		this.isprivate = isprivate;
+	}
+
+	
+}

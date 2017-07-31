@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsOriginalMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsOriginalVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_type" property="goodsType" jdbcType="BIGINT" />
+    <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
+    <result column="goods_desc" property="goodsDesc" jdbcType="VARCHAR" />
+    <result column="unit_value" property="unitValue" jdbcType="VARCHAR" />
+    <result column="unit_desc" property="unitDesc" jdbcType="VARCHAR" />
+    <result column="img_url" property="imgUrl" jdbcType="VARCHAR" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="is_synchronize" property="isSynchronize" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    
+    <!-- t_goods_type -->
+    <result column="type_name" property="typeName" jdbcType="VARCHAR" />
+    
+    <!-- t_goods_stock -->
+    <result column="sale_unit_name" property="saleUnitName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+	id,operator_id,goods_name,goods_type,goods_desc,img_url,unit_value,unit_desc,create_time,creator,
+	update_time,modifier,deleted,is_synchronize
+  </sql>
+  
+    <!-- 分页查询 -->
+  <select id="queryGoodsListByPage" resultMap="BaseResultMap">
+<!--   	 select * from t_goods_original -->
+  		SELECT goods.*, type.type_name FROM (SELECT <include refid="Base_Column_List" /> FROM t_goods_original) goods
+  	left join t_goods_type type on goods.goods_type = type.id
+  	where 1=1 AND goods.operator_id = #{operatorId} And goods.deleted=0 
+  	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND goods.goods_name like concat('%',#{searchKeyword},'%')
+  	</if>
+  	<if test="searchType != null and searchType != '' ">
+  	 AND goods.goods_type = #{searchType}
+  	</if>
+  	  <if test="searchKey != null and searchKey != '' ">
+  	 AND goods.id like concat('%',#{searchKey},'%')
+  	</if>
+  	ORDER BY goods.create_time desc
+  </select>
+  <select id="queryDetailsById" resultMap="BaseResultMap">
+  	SELECT goods.*, type.type_name as type_name FROM (SELECT <include refid="Base_Column_List" /> FROM t_goods_original) goods
+  	left join t_goods_type type on goods.goods_type = type.id
+  	where goods.id = #{id} and goods.operator_id = #{operatorId}
+  </select>
+  
+  <select id="getNewGoodsList" resultType="com.zhilianbao.erp.auth.vo.goods.GoodsOriginalSynchVo">
+		SELECT
+			t_goods_original.*, t_goods_type.type_name AS typeName ,t_goods_type.parent_id AS parentId
+		FROM
+			t_goods_original
+		LEFT JOIN t_goods_type ON t_goods_original.goods_type = t_goods_type.id
+		 where t_goods_original.is_synchronize=0 and t_goods_original.deleted=0 
+  </select>
+  
+  <update id="updateSynFlag">
+		update t_goods_original set is_synchronize=1 where is_synchronize=0
+  </update>
+  
+</mapper>

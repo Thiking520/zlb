@@ -1,0 +1,19 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.zhilianbao.erp.auth.service.goods.IGoodsPropertyItemService;
+
+/**
+ * 商品属性详情表
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年4月6日 下午3:18:11
+ */
+@Service
+@Transactional
+public class GoodsPropertyItemServiceImpl implements IGoodsPropertyItemService {
+	
+}

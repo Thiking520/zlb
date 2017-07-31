@@ -1,0 +1,152 @@
+package com.zhilianbao.erp.auth.entity.goods;
+
+import java.io.Serializable;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+import com.zhilianbao.erp.common.util.LogBeanNoNullStyle;
+
+@Table(name = "t_goods_collection")
+public class GoodsCollectionBean extends BaseBean implements Serializable{
+	private static final long serialVersionUID = 671606311057393022L;
+
+	/**
+     * 主键id
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long goodsId;
+    private Long goodsItemId;
+    private Long goodsSkuId;
+    private Long goodsStockId;
+    private Integer amount;//售卖量
+    private Integer usedStore;//占用库存
+
+    /**
+     * 获取主键id
+     *
+     * @return id - 主键id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * 设置主键id
+     *
+     * @param id 主键id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+	/** 
+	 * 获取
+	 * @return goodsItemId 
+	 */
+	public Long getGoodsItemId() {
+		return goodsItemId;
+	}
+
+	/** 
+	 * 设置
+	 * @param goodsItemId 
+	 */
+	public void setGoodsItemId(Long goodsItemId) {
+		this.goodsItemId = goodsItemId;
+	}
+
+	/** 
+	 * 获取
+	 * @return goodsSkuId 
+	 */
+	public Long getGoodsSkuId() {
+		return goodsSkuId;
+	}
+
+	/** 
+	 * 设置
+	 * @param goodsSkuId 
+	 */
+	public void setGoodsSkuId(Long goodsSkuId) {
+		this.goodsSkuId = goodsSkuId;
+	}
+
+	/** 
+	 * 获取
+	 * @return goodsStockId 
+	 */
+	public Long getGoodsStockId() {
+		return goodsStockId;
+	}
+
+	/** 
+	 * 设置
+	 * @param goodsStockId 
+	 */
+	public void setGoodsStockId(Long goodsStockId) {
+		this.goodsStockId = goodsStockId;
+	}
+
+	
+	
+	/** 
+	 * 获取
+	 * @return goodsId 
+	 */
+	public Long getGoodsId() {
+		return goodsId;
+	}
+
+	/** 
+	 * 设置
+	 * @param goodsId 
+	 */
+	public void setGoodsId(Long goodsId) {
+		this.goodsId = goodsId;
+	}
+
+	/** 
+	 * 获取
+	 * @return amount 
+	 */
+	public Integer getAmount() {
+		return amount;
+	}
+
+	/** 
+	 * 设置
+	 * @param amount 
+	 */
+	public void setAmount(Integer amount) {
+		this.amount = amount;
+	}
+
+	/** 
+	 * 获取
+	 * @return usedStore 
+	 */
+	public Integer getUsedStore() {
+		return usedStore;
+	}
+
+	/** 
+	 * 设置
+	 * @param usedStore 
+	 */
+	public void setUsedStore(Integer usedStore) {
+		this.usedStore = usedStore;
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, new LogBeanNoNullStyle());
+	}
+}

@@ -1,0 +1,34 @@
+package com.zhilianbao.erp.auth.listenner;
+
+import com.zhilianbao.erp.auth.utils.cache.DictCacheUtil;
+import com.zhilianbao.erp.auth.utils.cache.ParamCacheUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.zhilianbao.erp.auth.impl.parameter.ParamInit;
+
+public class InitParaCache extends Thread {
+	private static final Logger logger = LogManager.getLogger(InitParaCache.class);
+
+	public void run() {
+		try {
+//			logger.info("开始加载参数字典到缓存.....");
+
+			// redis缓存参数
+//			ParamInit.updateParamCacheData();
+			//清除数据字典缓存
+			DictCacheUtil.remove();
+
+			// redis缓存字典
+			//清除全局参数缓存
+			ParamInit.updateDictCacheData();
+			ParamCacheUtil.remove();
+
+//			logger.info("加载全局参数及数据字典到缓存完成!");
+			logger.info("全局参数及数据字典到缓存已清除完成!");
+		} catch (Exception e) {
+//			logger.error("加载全局参数及数据字典到缓存失败，原因：", e);
+			logger.error("清除全局参数及数据字典缓存失败，原因：", e);
+		}
+	}
+}

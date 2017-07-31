@@ -1,0 +1,233 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.goods.GoodsMaterialBean;
+import com.zhilianbao.erp.auth.entity.parameter.SystemParamBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsMaterialMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsTypeMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsMaterialService;
+import com.zhilianbao.erp.auth.service.parameter.ISystemParamService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialPageVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialResultVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsTypeVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.util.QiNiuMethod;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+/**
+ * 商品素材业务处理类
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月10日 上午11:25:17
+ */
+@Service
+public class GoodsMaterialServiceImpl implements IGoodsMaterialService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsMaterialServiceImpl.class);
+	
+	@Autowired
+	private GoodsMaterialMapper goodsMaterialMapper;
+	@Autowired
+	private GoodsTypeMapper goodsTypeMapper;
+	@Autowired
+	private ISystemParamService systemParamService;//RPC调用获取全局参数
+
+	/**
+	 * 获取某节点中所有子节点
+	 * 参数1：节点id
+	 * 参数2：所有节点列表
+	 */
+	//定义set可以避免重复
+    private static Set<GoodsTypeVo> returnList = null;
+	private  Set<GoodsTypeVo> treeMenuList(Long id, List<GoodsTypeVo> list) {
+		if(list == null) return null;
+		for (Iterator<GoodsTypeVo> iterator = list.iterator(); iterator.hasNext();) {
+			GoodsTypeVo menu = (GoodsTypeVo) iterator.next();
+			//据传入的某个父节点ID,遍历该父节点的所有子节点
+			if(menu.getParentId() == id) {
+				returnList.add(menu);
+				treeMenuList(menu.getId(),list);
+			}
+		}
+		return returnList;
+	}
+	
+	
+	public ResponseResult<GoodsMaterialResultVo> queryListByPage(GoodsMaterialPageVo vo) {
+		returnList = new HashSet<GoodsTypeVo>();
+		GoodsTypeVo goodsTypevo = new GoodsTypeVo();
+		goodsTypevo.setId(vo.getGoodsTypeId());
+		goodsTypevo.setOperatorId(vo.getOperatorId());
+		//查找所有商品类型
+		List<GoodsTypeVo> goodsTyeList = goodsTypeMapper.goodsTypeTree(goodsTypevo);
+		//获取所有子节点
+		Set<GoodsTypeVo> returnList = treeMenuList(vo.getGoodsTypeId(),goodsTyeList);
+		//将所有id取出
+		Set<Long> goodsTypeIds = new HashSet<Long>();
+		
+		boolean isDir = false;
+		
+		// 0查所有
+		if(vo.getGoodsTypeId() != 0){
+			goodsTypeIds.add(vo.getGoodsTypeId());
+			if(returnList != null) {
+				if(returnList.size() > 0) {
+					//为目录，所以还有子类
+					for (GoodsTypeVo goodsTypeVo : returnList) {
+						goodsTypeIds.add(goodsTypeVo.getId());
+					}
+					isDir = true;
+				} 
+//				else {//已经是最底层，没有子类了
+//					goodsTypeIds.add(vo.getGoodsTypeId());
+//				}
+			}
+		}
+		
+		//将条件放入查询中
+		vo.setGoodsTypeIds(goodsTypeIds);
+		ResponseResult<GoodsMaterialResultVo> rspResult = new ResponseResult<GoodsMaterialResultVo>();
+		Page<GoodsMaterialVo> page = new Page<GoodsMaterialVo>();
+		try {
+			GoodsMaterialResultVo gResult = new GoodsMaterialResultVo();
+			//判断是否为文件夹
+			gResult.setIsDir(isDir);
+			
+			// 与mysql中的limit参数一致offset,limit
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize()); // 核心分页代码 开启分页查询，后面第一条查询语句会被分页
+			// 注意:如果有两条查询语句，第二条不会被分页
+			List<GoodsMaterialVo> list = goodsMaterialMapper.queryListByPage(vo);
+			if (CollectionUtils.isEmpty(list)) {
+				return rspResult.success(gResult);
+			}
+			PageInfo<GoodsMaterialVo> pageInfo = new PageInfo<GoodsMaterialVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<GoodsMaterialVo> goodsList = pageInfo.getList();// 推荐使用这个获取结果集
+			if (CollectionUtils.isEmpty(goodsList)) {
+				return rspResult.success(gResult);
+			}
+            //分页必填的两个参数
+			page.setTotal(total);
+			page.setRows(goodsList);
+			//写入当前页、每页数据条数
+			page.setOffset(vo.getOffset());
+			page.setCurrentPage(vo.getOffset()/vo.getPageSize() + 1);
+			page.setPageSize(vo.getPageSize());
+			
+			gResult.setPage(page);
+			
+			return rspResult.success(gResult);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品素材】分页查询出错{}",vo,e);
+			return rspResult.err();
+		}
+	}
+
+
+	@Override
+	public ResponseResult<GoodsMaterialVo> addGoodsMateria(GoodsMaterialVo vo) {
+		ResponseResult<GoodsMaterialVo> rspResult = new ResponseResult<GoodsMaterialVo>();
+		GoodsMaterialBean bean = new GoodsMaterialBean();
+		try {
+			PropertyUtils.copyProperties(bean,vo);
+			Long operatorId = vo.getOperatorId();
+			bean.setOperatorId(operatorId);
+			bean.setId(null);
+			bean.setCreator(vo.getUserId());
+			bean.setUpdateTime(new Date());
+			bean.setModifier(vo.getUserId());
+			goodsMaterialMapper.insertSelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品素材】新增出错{}",bean, e);
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsMaterialVo> updateGoodsType(GoodsMaterialVo vo) {
+		ResponseResult<GoodsMaterialVo> rspResult = new ResponseResult<GoodsMaterialVo>();
+		try {
+			GoodsMaterialBean bean = new GoodsMaterialBean();
+			PropertyUtils.copyProperties(bean, vo);
+			goodsMaterialMapper.updateByPrimaryKeySelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品素材】修改出错{}",vo, e);
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+
+	@Override
+	public ResponseResult<GoodsMaterialVo> deleteImg(GoodsMaterialVo vo) {
+		ResponseResult<GoodsMaterialVo> rspResult = new ResponseResult<GoodsMaterialVo>();
+		try {
+			// 判断是否被引用
+			Long [] deleteIds = new Long[1];
+			deleteIds[0] = vo.getId();//现在是单个删除，以后可能批量删除
+			int count = goodsMaterialMapper.getCountByDeleteIds(deleteIds);
+			if(count > 0)
+				return new ResponseResult<GoodsMaterialVo>(ResultEnum.IN_USE);
+			
+			GoodsMaterialBean bean = new GoodsMaterialBean();
+			PropertyUtils.copyProperties(bean, vo);
+			bean.setDeleted(true);
+			bean.setUpdateTime(new Date());
+			bean.setModifier(vo.getModifier());
+			goodsMaterialMapper.updateByPrimaryKeySelective(bean);
+		} catch (Exception e) {
+			logger.error("修改出错{}",vo, e);
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsMaterialVo> getUptoken(GoodsMaterialVo goods) {
+		//1通过运营商ID查询ak\sk\图片储存域名路径\存储空间名称
+		ResponseResult<GoodsMaterialVo> reaponse = new ResponseResult<GoodsMaterialVo>();
+		SystemParamBean paramVo = new SystemParamBean();
+		paramVo.setOperatorId(goods.getOperatorId());
+		
+		String accessKey = systemParamService.getParamValue(goods.getOperatorId(), Constants.ACCESS_KEY).getData();//公钥
+		String secretKey = systemParamService.getParamValue(goods.getOperatorId(), Constants.SECRET_KEY).getData();//私钥
+		String bucket = systemParamService.getParamValue(goods.getOperatorId(), Constants.BUCKET).getData();//存储空间名称
+		String domain = systemParamService.getParamValue(goods.getOperatorId(), Constants.DIMAIN).getData();//存储域名
+		
+		//2、获取token
+		String upToken = null;
+		try {
+			upToken = QiNiuMethod.getUpToken(accessKey, secretKey, bucket, null);
+			if(upToken == null) return new ResponseResult<GoodsMaterialVo>(ResultEnum.EMPTY);
+			
+			goods.setUpToken(upToken);
+			goods.setDomain(domain);
+			reaponse.setData(goods);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return reaponse.err();
+		}
+		return reaponse;
+	}
+
+
+}

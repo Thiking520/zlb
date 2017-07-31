@@ -1,0 +1,55 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsOriginalBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsOriginalSynchVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsOriginalVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 原始商品基础信息
+ * @Company: 智联宝 
+ * @author ：lld
+ * @date ：2017年5月17日 11:40
+ */
+public interface GoodsOriginalMapper extends BaseMapper<GoodsOriginalBean> {
+
+	/**
+	 * 分页查询
+	 * @param vo
+	 * @return ：List<GoodsOriginalVo>
+	 * @author ：luliang
+	 * @date ：2017年5月18日
+	 */
+	List<GoodsOriginalVo> queryGoodsListByPage(ViewSearchVo vo);
+	
+	/**
+	 * 根据id查询详情，
+	 * @param vo
+	 * @return ：List<GoodsOriginalVo>
+	 * @author ：luliang
+	 * @date ：2017年5月18日
+	 */
+	public GoodsOriginalVo queryDetailsById(GoodsOriginalVo vo);
+	
+	/**
+	 * getNewGoodsList
+	 * @param 
+	 * @return ：List<GoodsOriginalVo>
+	 * @author ：luliang
+	 * @date ：2017年5月18日
+	 */
+	public List<GoodsOriginalSynchVo> getNewGoodsList();
+	
+	/**
+	 * updateSynFlag
+	 * @param 
+	 * @return ：List<GoodsOriginalVo>
+	 * @author ：luliang
+	 * @date ：2017年5月18日
+	 */
+	public void updateSynFlag();
+}

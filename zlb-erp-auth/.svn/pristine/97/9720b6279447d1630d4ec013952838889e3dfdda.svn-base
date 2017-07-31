@@ -1,0 +1,15 @@
+package com.zhilianbao.erp.auth.mapper.archives;
+
+import com.zhilianbao.erp.auth.entity.archives.DeliveryScopePointBean;
+
+import tk.mybatis.mapper.common.Mapper;
+
+/**
+* @company zhilianbao
+* @author chengjianhui
+* @date 2017年7月20日下午6:20:48
+* @description:覆盖物点集合对象
+*/
+public interface DeliveryScopePointMapper extends Mapper<DeliveryScopePointBean> {
+	
+}

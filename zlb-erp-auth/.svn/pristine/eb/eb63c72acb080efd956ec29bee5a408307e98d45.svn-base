@@ -1,0 +1,61 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsCollectionBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsCollectionVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 组合商品
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:33:00
+ */
+public interface GoodsCollectionMapper extends BaseMapper<GoodsCollectionBean> {
+	
+	/**
+	 * 组合商品：根据goodsId查询详情列表
+	 * @param vo
+	 * @return ：List<GoodsCollectionVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:57:30
+	 */
+	List<GoodsCollectionVo> queryCollectionDetailsByGoodsId(GoodsCollectionVo vo);
+
+	/**
+	 * 批量删除
+	 * @param deleteIds ：void
+	 * @author ：chenll
+	 * @date ：2017年4月5日 下午3:49:14
+	 */
+	void deleteBatchByIds(@Param("deleteIds")Long[] deleteIds);
+
+	/**
+	 * 销售规格页签保存时，判断界面删除的规格有没有被组合商品引用
+	 * @param deleteIds
+	 * @return ：ResponseResult<GoodsSkuRecodeVo>
+	 * @author ：chenll
+	 * @date ：2017年4月5日 下午4:35:22
+	 */
+	int getCountByDeleteIds(@Param("deleteIds")Long[] deleteIds);
+
+	/**
+	 * 根据运营商id获取组合商品列表：电商平台需要调用的接口
+	 * @param searchVo
+	 * @return ：List<GoodsCollectionVo>
+	 * @author ：chenll
+	 * @date ：2017年5月25日 上午10:42:26
+	 */
+	List<GoodsCollectionVo> querCollection(GoodsVo searchVo);
+	
+	/**
+	 * 根据商品id查询组合商品项列表
+	 * @param goodsId
+	 * @return
+	 */
+	List<GoodsCollectionVo> querListByGoodsId(@Param("goodsId")Long goodsId);
+}

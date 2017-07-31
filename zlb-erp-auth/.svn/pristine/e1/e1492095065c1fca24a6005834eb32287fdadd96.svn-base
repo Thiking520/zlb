@@ -1,0 +1,293 @@
+package com.zhilianbao.erp.auth.entity.goods;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+
+@Table(name = "t_goods_price")
+public class GoodsPriceBean extends BaseBean implements Serializable{
+	private static final long serialVersionUID = 671606311057393022L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long goodsItemId;//外键 t_goods_item
+    private Long goodsSkuId;//外键 t_goods_sku_list
+    private Long goodsCollectionId;//外键 t_goods_collection
+    private BigDecimal suggestPrice;//建议售价
+    private BigDecimal mallPrice;//商城售价
+    private BigDecimal storePrice;//门店售价
+    private BigDecimal companyPrice;//企业售价
+    private BigDecimal proxyPrice;//代理售价
+    private BigDecimal costPrice;//成本价
+    private BigDecimal purchasePrice;//标准进价
+    private Integer specification;
+    private Integer specificationType;
+
+	/** 
+	 * 获取
+	 * @return id 
+	 */
+	public Long getId() {
+		return id;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param id 
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return goodsItemId 
+	 */
+	public Long getGoodsItemId() {
+		return goodsItemId;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param goodsItemId 
+	 */
+	public void setGoodsItemId(Long goodsItemId) {
+		this.goodsItemId = goodsItemId;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return goodsSkuId 
+	 */
+	public Long getGoodsSkuId() {
+		return goodsSkuId;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param goodsSkuId 
+	 */
+	public void setGoodsSkuId(Long goodsSkuId) {
+		this.goodsSkuId = goodsSkuId;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return goodsCollectionId 
+	 */
+	public Long getGoodsCollectionId() {
+		return goodsCollectionId;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param goodsCollectionId 
+	 */
+	public void setGoodsCollectionId(Long goodsCollectionId) {
+		this.goodsCollectionId = goodsCollectionId;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return suggestPrice 
+	 */
+	public BigDecimal getSuggestPrice() {
+		return suggestPrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param suggestPrice 
+	 */
+	public void setSuggestPrice(BigDecimal suggestPrice) {
+		this.suggestPrice = suggestPrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return mallPrice 
+	 */
+	public BigDecimal getMallPrice() {
+		return mallPrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param mallPrice 
+	 */
+	public void setMallPrice(BigDecimal mallPrice) {
+		this.mallPrice = mallPrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return storePrice 
+	 */
+	public BigDecimal getStorePrice() {
+		return storePrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param storePrice 
+	 */
+	public void setStorePrice(BigDecimal storePrice) {
+		this.storePrice = storePrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return companyPrice 
+	 */
+	public BigDecimal getCompanyPrice() {
+		return companyPrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param companyPrice 
+	 */
+	public void setCompanyPrice(BigDecimal companyPrice) {
+		this.companyPrice = companyPrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return proxyPrice 
+	 */
+	public BigDecimal getProxyPrice() {
+		return proxyPrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param proxyPrice 
+	 */
+	public void setProxyPrice(BigDecimal proxyPrice) {
+		this.proxyPrice = proxyPrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return costPrice 
+	 */
+	public BigDecimal getCostPrice() {
+		return costPrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param costPrice 
+	 */
+	public void setCostPrice(BigDecimal costPrice) {
+		this.costPrice = costPrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return purchasePrice 
+	 */
+	public BigDecimal getPurchasePrice() {
+		return purchasePrice;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param purchasePrice 
+	 */
+	public void setPurchasePrice(BigDecimal purchasePrice) {
+		this.purchasePrice = purchasePrice;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return specification 
+	 */
+	public Integer getSpecification() {
+		return specification;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param specification 
+	 */
+	public void setSpecification(Integer specification) {
+		this.specification = specification;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return specificationType 
+	 */
+	public Integer getSpecificationType() {
+		return specificationType;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param specificationType 
+	 */
+	public void setSpecificationType(Integer specificationType) {
+		this.specificationType = specificationType;
+	}
+
+	
+	
+}

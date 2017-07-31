@@ -1,0 +1,37 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsTagBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsTagVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 商品标签
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:36:13
+ */
+public interface GoodsTagMapper extends BaseMapper<GoodsTagBean> {
+	
+	/**
+	 * 分页查询
+	 * @param vo
+	 * @return ：List<GoodsTagVo>
+	 * @author ：chenll
+	 * @date ：2017年4月12日 下午5:07:43
+	 */
+	List<GoodsTagVo> queryListByPage(ViewSearchVo vo);
+	
+	/**
+	 * 商品标签，删除操作时，查询要删除的t_goods_tag有没有被引用
+	 * @param deleteIds
+	 * @return ：int
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午7:19:14
+	 */
+	int getCountByDeleteIds(@Param("deleteIds")Long[] deleteIds);
+}

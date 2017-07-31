@@ -1,0 +1,41 @@
+package com.zhilianbao.erp.auth.impl.systemparameter;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.mapper.systemparameter.BaseAreaMapper;
+import com.zhilianbao.erp.auth.service.systemparameter.IBaseAreaService;
+import com.zhilianbao.erp.auth.vo.systemparameter.BaseAreaVo;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+/**
+ * 
+ * @author Tobin
+ *
+ */
+@Service
+public class BaseAreaServiceImpl implements IBaseAreaService{
+
+    @Autowired
+    private BaseAreaMapper baseAreaMapper;
+	@Override
+	public ResponseResult<List<BaseAreaVo>> queryArea(BaseAreaVo vo) {
+		ResponseResult<List<BaseAreaVo>> respResult = new ResponseResult<List<BaseAreaVo>>();
+		List<BaseAreaVo> baseAreaVos = baseAreaMapper.queryArea(vo.getId());
+		
+		return respResult.success(baseAreaVos);
+	}
+	@Override
+	public List<BaseAreaVo> mulArea(List<Long> list) {
+		// TODO Auto-generated method stub
+		return baseAreaMapper.mulArea(list);
+	}
+
+	@Override
+	public ResponseResult<List<BaseAreaVo>> queryAreaId(BaseAreaVo vo) {
+		ResponseResult<List<BaseAreaVo>> respResult = new ResponseResult<List<BaseAreaVo>>();
+		List<BaseAreaVo> baseAreaVos = baseAreaMapper.queryAreaId(vo.getId());
+		return respResult.success(baseAreaVos);
+	}
+}

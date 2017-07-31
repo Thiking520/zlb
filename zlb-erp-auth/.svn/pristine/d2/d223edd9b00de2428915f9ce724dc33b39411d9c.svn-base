@@ -1,0 +1,111 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsVo;
+import com.zhilianbao.erp.auth.vo.goods.facade.ReqGoodsRestVo;
+import com.zhilianbao.erp.auth.vo.goods.facade.RspGoodsRestVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 商品基础信息
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:32:44
+ */
+public interface GoodsMapper extends BaseMapper<GoodsBean> {
+	
+	/**
+	 * 根据id查询详情，商品基本信息页签(包括商品分类及商品标签)
+	 * @param vo
+	 * @return ：GoodsVo
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:50:36
+	 */
+	GoodsVo queryDetailsById(GoodsVo vo);
+	
+	/**
+	 * 分页查询
+	 * @param vo
+	 * @return ：List<GoodsVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:50:49
+	 */
+	List<GoodsVo> queryGoodsListByPage(ViewSearchVo vo);
+	
+	/**
+	 * 组合商品页签，获取供选择的商品列表
+	 * @param vo
+	 * @return ：List<GoodsVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:50:59
+	 */
+	List<GoodsVo> queryGoodsListForCollection(ViewSearchVo vo);
+
+	/**
+	 * 商品分类，删除操作时，查询要删除的t_goods_type有没有被引用
+	 * @param deleteIds
+	 * @return ：int
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:51:29
+	 */
+	int getCountByDeleteIds(@Param("deleteIds") Long[] deleteIds);
+
+	/**
+	 * TMS-》调度管理-》查看货品详情 ，调用此接口获取商品信息
+	 * @param list
+	 * @return ：List<RspGoodsRestVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:52:26
+	 */
+	List<RspGoodsRestVo> mulGoodsInfo(ReqGoodsRestVo reqGoodVo);
+	
+	/**
+	 * 根据id查询详情
+	 * @param vo
+	 * @return ：GoodsVo
+	 * @author ：chenll
+	 * @date ：2017年4月13日 下午4:36:53
+	 */
+	GoodsVo queryById(GoodsVo vo);
+
+	/**
+	 * 判断编码是否已经存在
+	 * @param goodsCode
+	 * @return ：int
+	 * @author ：chenll
+	 * @date ：2017年4月22日 下午4:14:24
+	 */
+	int isExistsGoodsCode(String goodsCode);
+	
+	/**
+	 * 分页 查询 商品规格 -- I_0:单品，S_1 多规格，C_2 组合, 原始商品
+	 * @param vo
+	 * @return ：List<GoodsVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:50:49
+	 */
+	List<GoodsVo> queryGoodsListPage(ViewSearchVo vo);
+
+	/**
+	 * 根据运营商id和商品类型获取列表：电商平台需要调用的接口
+	 * @param goodsVo
+	 * @return ：List<GoodsVo>
+	 * @author ：chenll
+	 * @date ：2017年5月24日 下午6:06:02
+	 */
+	List<GoodsVo> querGoods(GoodsVo goodsVo);
+
+	/**
+	 * 获得运营商最低商品id
+	 * @param operatorId
+	 * @return
+	 */
+	int getOperatorIdMaxGoodCood(@Param("operatorId") Long operatorId);
+	
+}

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhilianbao.erp.auth.mapper.parameter.SystemParamMapper">
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.parameter.SystemParamVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+    <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+    <result column="module" jdbcType="INTEGER" property="module" />
+    <result column="param_desc" jdbcType="VARCHAR" property="paramDesc" />
+    <result column="param_key" jdbcType="VARCHAR" property="paramKey" />
+    <result column="param_value" jdbcType="VARCHAR" property="paramValue" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="modifiable" jdbcType="INTEGER" property="modifiable" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="creator" jdbcType="BIGINT" property="creator" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="modifier" jdbcType="BIGINT" property="modifier" />
+    <result column="deleted" jdbcType="INTEGER" property="deleted" />
+  </resultMap>
+  
+  <resultMap id="ParamResultMap" type="com.zhilianbao.erp.common.entity.system.ParamBean">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+    <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+    <result column="module" jdbcType="INTEGER" property="module" />
+    <result column="param_desc" jdbcType="VARCHAR" property="paramDesc" />
+    <result column="param_key" jdbcType="VARCHAR" property="paramKey" />
+    <result column="param_value" jdbcType="VARCHAR" property="paramValue" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+   	id, operator_id, group_name, modifiable, module, param_desc, param_key, param_value, 
+    status, create_time, creator, update_time, modifier
+  </sql>
+  <sql id="Page_Where_Sql">
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test="vo.id != null and vo.id != ''">
+			AND id = #{vo.id}
+		</if>
+		<if test="vo.searchKey != null and vo.searchKey != ''">
+			AND param_key like concat('%',#{vo.searchKey},'%')
+		</if>
+		<if test="vo.searchDesc != null and vo.searchDesc != ''">
+			AND param_desc  like concat('%',#{vo.searchDesc},'%')
+		</if>
+		<if test="vo.status != null and vo.status != ''">
+			AND status  = #{vo.status}
+		</if>
+		<if test="vo.searchType != null and vo.searchType != ''">
+			AND module  = #{vo.searchType}
+		</if>
+		AND operator_id = #{vo.operatorId}
+	</trim>
+   </sql>
+    <select id="getPageByVo" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		,creatorName,
+	  	modifierName,
+	 	operatorName
+		from t_system_param
+		LEFT JOIN (SELECT center_id,user_name AS creatorName FROM t_user_admin)u1 ON creator = u1.center_id
+		LEFT JOIN (SELECT center_id,user_name AS modifierName FROM t_user_admin)u2 ON MODIFIER = u2.center_id
+		LEFT JOIN (SELECT company_key,company_name AS operatorName FROM t_operator_company)oc ON `operator_id` = oc.`company_key`
+		<include refid="Page_Where_Sql" />
+		<if test="vo.sort != null and vo.sort != '' and vo.order != null and vo.order != ''">
+			order by ${vo.sort} ${vo.order}
+		</if>
+		<if test="vo.sort != null and vo.sort != '' and ( vo.order == null or vo.order == '')">
+			order by ${vo.sort}
+		</if>
+		<if test="vo.sort == null or vo.sort == ''">
+			order by create_time desc
+		</if>
+	</select>
+	
+	<select id="getAllTypeMapList" resultType="java.util.HashMap">
+		SELECT
+		DISTINCT param_desc, param_type
+		FROM t_system_param
+	</select>
+	
+	<select id="getAllList" resultMap="ParamResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_system_param
+		WHERE status = 1
+	</select>
+	
+	
+	<insert id="insertBatchOperatorPara" useGeneratedKeys="true" keyProperty="id" parameterType="list">
+		insert into t_system_param 
+	    (
+	      operator_id, 
+	      group_name, 
+	      module, 
+	      param_desc, 
+	      param_key, 
+	      param_value, 
+          status, 
+          modifiable, 
+          creator, 
+          modifier
+	    )
+	    values
+	    <foreach collection="list" item="item" separator="," index="index">
+	        (
+		        #{item.operatorId},
+		        #{item.groupName},
+		        #{item.module},
+		        #{item.paramDesc},
+		        #{item.paramKey},
+		        #{item.paramValue},
+		        #{item.status},
+		        #{item.modifiable},
+		        #{item.creator},
+		        #{item.modifier}
+	        )
+	    </foreach>
+	    
+	</insert>
+</mapper>

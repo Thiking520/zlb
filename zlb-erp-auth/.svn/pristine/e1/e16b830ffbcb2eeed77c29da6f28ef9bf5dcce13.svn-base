@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.parameter.SystemDictMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.parameter.SystemDictVo" >
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+    <result column="dict_title" jdbcType="VARCHAR" property="dictTitle" />
+    <result column="dict_type" jdbcType="VARCHAR" property="dictType" />
+    <result column="dict_key" jdbcType="VARCHAR" property="dictKey" />
+    <result column="dict_desc" jdbcType="VARCHAR" property="dictDesc" />
+    <result column="dict_value" jdbcType="VARCHAR" property="dictValue" />
+    <result column="dict_order" jdbcType="INTEGER" property="dictOrder" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="modifiable" jdbcType="INTEGER" property="modifiable" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="creator" jdbcType="BIGINT" property="creator" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="modifier" jdbcType="BIGINT" property="modifier" />
+    <result column="deleted" jdbcType="INTEGER" property="deleted" />
+  </resultMap>
+  
+  <resultMap id="DictResultMap" type="com.zhilianbao.erp.auth.vo.parameter.rpc.DictVo" >
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+    <result column="dict_title" jdbcType="VARCHAR" property="dictTitle" />
+    <result column="dict_type" jdbcType="VARCHAR" property="dictType" />
+    <result column="dict_key" jdbcType="VARCHAR" property="dictKey" />
+    <result column="dict_desc" jdbcType="VARCHAR" property="dictDesc" />
+    <result column="dict_value" jdbcType="VARCHAR" property="dictValue" />
+    <result column="dict_order" jdbcType="INTEGER" property="dictOrder" />
+  </resultMap>
+  
+   <sql id="Base_Column_List">
+      id,
+	  operator_id,
+	  dict_title,
+	  dict_type,
+	  dict_key,
+	  dict_desc,
+	  dict_value,
+	  dict_order,
+	  status,
+	  modifiable,
+	  create_time,
+	  update_time
+   </sql>
+   
+   <sql id="Page_Where_Sql">
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test="vo.id != null and vo.id != ''">
+			AND id = #{vo.id}
+		</if>
+		<if test="vo.searchKey != null and vo.searchKey != ''">
+			AND dict_type like concat('%',#{vo.searchKey},'%')
+		</if>
+		<if test="vo.searchName != null and vo.searchName != ''">
+			AND dict_title  like concat('%',#{vo.searchName},'%')
+		</if>
+		<if test="vo.status != null and vo.status != ''">
+			AND status  = #{vo.status}
+		</if>
+		AND operator_id = #{vo.operatorId}
+	</trim>
+   </sql>
+    <select id="getPageByVo" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		,creatorName,
+	  	modifierName,
+	 	operatorName
+		from t_system_dict
+		LEFT JOIN (SELECT center_id,user_name AS creatorName FROM t_user_admin)u1 ON creator = u1.center_id
+		LEFT JOIN (SELECT center_id,user_name AS modifierName FROM t_user_admin)u2 ON MODIFIER = u2.center_id
+		LEFT JOIN (SELECT company_key,company_name AS operatorName FROM t_operator_company)oc ON `operator_id` = oc.`company_key`
+		<include refid="Page_Where_Sql" />
+		<if test="vo.sort != null and vo.sort != '' and vo.order != null and vo.order != ''">
+			order by ${vo.sort} ${vo.order}
+		</if>
+		<if test="vo.sort != null and vo.sort != '' and ( vo.order == null or vo.order == '')">
+			order by ${vo.sort}
+		</if>
+		<if test="vo.sort == null or vo.sort == ''">
+			order by create_time desc
+		</if>
+		
+	</select>
+	
+<!-- 	<select id="getAllTypeMapList" resultType="java.util.HashMap">
+		SELECT
+		DISTINCT dict_title, dict_type
+		FROM t_system_dict
+	</select> -->
+	
+	<select id="getAllList" resultMap="DictResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_system_dict
+		WHERE status = 1
+	</select>
+	
+	<insert id="insertBatchOperatorDict" useGeneratedKeys="true" keyProperty="id" parameterType="list">
+		insert into t_system_dict 
+	    (
+	      operator_id,
+		  dict_title,
+		  dict_type,
+		  dict_key,
+		  dict_desc,
+		  dict_value,
+		  dict_order,
+		  status,
+		  modifiable,
+		  creator,
+		  modifier
+	    )
+	    values
+	    <foreach collection="list" item="item" separator="," index="index">
+	        (
+		        #{item.operatorId},
+		        #{item.dictTitle},
+		        #{item.dictType},
+		        #{item.dictKey},
+		        #{item.dictDesc},
+		        #{item.dictValue},
+		        #{item.dictOrder},
+		        #{item.status},
+		        #{item.modifiable},
+		        #{item.creator},
+		        #{item.modifier}
+	        )
+	    </foreach>
+	    
+	</insert>
+</mapper>

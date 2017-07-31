@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhilianbao.erp.auth.mapper.employee.EmployeeAccountsListMapper">
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.employee.EmployeeAccountsListVo">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="admin_id" jdbcType="BIGINT" property="adminId" />
+    <result column="employee_id" jdbcType="BIGINT" property="employeeId" />
+    <result column="enabled" jdbcType="BIT" property="enabled" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="deleted" jdbcType="BIT" property="deleted" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    id, admin_id, employee_id, enabled, creator, modifier, create_time, update_time, 
+    deleted
+  </sql>
+  
+  <select id="findByAccount" resultMap="BaseResultMap">
+	select * from t_employee_accounts_list where admin_id = #{adminId}
+  </select>
+  
+  <select id="findById" resultMap="BaseResultMap">
+	select * from t_employee_accounts_list where id=#{id}
+  </select>
+  
+  <select id="findByUserName" resultMap="BaseResultMap">
+	  select 
+		eal.* 
+	from 
+		t_employee_accounts_list as eal,
+		t_employee_information as e,
+		t_user_admin as u
+	where 
+		eal.admin_id = u.center_id
+		and eal.employee_id = e.id
+		and u.user_name = #{userName}
+		and u.enabled = true
+		and u.deleted = false
+		and e.enabled = true
+		and e.deleted = false
+		and eal.deleted = false
+		and eal.enabled = true
+  </select>
+  
+  <select id="findAllByOperatorId" resultMap="BaseResultMap">
+  	select 
+  		eal.* 
+  	from 
+  		t_employee_accounts_list as eal,
+  		t_employee_information as e
+  	where
+  		eal.employee_id = e.id
+  		and e.enabled = true
+		and e.deleted = false
+		and eal.deleted = false
+		and eal.enabled = true
+		and e.operator_id = #{operatorId}
+  </select>
+</mapper>

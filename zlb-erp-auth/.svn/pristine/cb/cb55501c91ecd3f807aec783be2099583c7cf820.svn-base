@@ -1,0 +1,162 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.zhilianbao.erp.auth.entity.goods.conversion.GoodsConversionRateBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsConversionRateMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsConversionRateService;
+import com.zhilianbao.erp.auth.vo.goods.conversion.GoodsConversionRateResultVo;
+import com.zhilianbao.erp.auth.vo.goods.conversion.GoodsConversionRateVo;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+@Service
+@Transactional
+public class GoodsConversionRateServiceImpl implements IGoodsConversionRateService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsConversionRateServiceImpl.class);
+	
+	@Autowired
+	private GoodsConversionRateMapper goodsConversionRateMapper;
+	
+
+	/**
+	 * 根据goodsId获取多规格商品详情，每个多规格对象中都包含该多规格的原始商品转换率明细列表。
+	 * @param vo
+	 * @return ：ResponseResult<GoodsStockVo>
+	 * @author ：LiLinDong
+	 * @date ：2017年7月3日 下午4:30:22
+	 */
+	@Override
+	public ResponseResult<Page<GoodsConversionRateResultVo>> goodsConversionAndRecordRateByGoodsId(
+			GoodsConversionRateVo vo) {
+		logger.info("【商品资料管理-多规格商品】根据goodsId（售卖商品id）查询所有规格详情，参数{}",vo);
+		ResponseResult<Page<GoodsConversionRateResultVo>> rspResult = new ResponseResult<Page<GoodsConversionRateResultVo>>();
+		Page<GoodsConversionRateResultVo> page = new Page<GoodsConversionRateResultVo>();
+		rspResult.setData(page);
+		try {
+			List<GoodsConversionRateResultVo> list = goodsConversionRateMapper.goodsConversionAndRecordRateByGoodsId(vo);
+			if (CollectionUtils.isEmpty(list)) {
+				page.setTotal(0L);
+				page.setRows(null);
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+			page.setTotal(Long.parseLong(list.size()+""));
+			page.setRows(list);
+			return rspResult.success(page);
+		} catch (Exception e) {
+			logger.error("【商品资料管理-多规格商品】根据goodsId（售卖商品id）查询所有规格详情出错",vo,e);
+			return rspResult.err();
+		}
+	}
+	
+	/**
+	 * 根据多规格Id获取多规格信息以及其下原始商品转换率详情
+	 * @param vo
+	 * @return ：ResponseResult<Object>
+	 * @author ：LiLinDong
+	 * @date ：2017年7月7日
+	 */
+	@Override
+	public GoodsConversionRateResultVo getGoodsConversionRateListBySkuId(GoodsConversionRateVo vo) {
+
+		logger.info("【商品资料管理-单品-商品】根据多规格id，查询多规格信息以及其下所有原始转换率，参数{}",vo);
+		GoodsConversionRateResultVo gcrv = null;
+		try {
+			gcrv = goodsConversionRateMapper.getGoodsConversionRateListBySkuId(vo);
+		} catch (Exception e) {
+			logger.error("【商品资料管理-单品-商品】根据多规格id，查询多规格信息以及其下所有原始转换率出错",e);
+			gcrv=null;
+		}
+		return gcrv;
+	}
+	
+	@Override
+	public ResponseResult<Object> singleGoodsConversionByGoodsId(GoodsConversionRateVo vo) {
+
+		logger.info("【商品资料管理-单品商品】根据商品id查询该商品包含的所有原始商品与相应的转换率详情，参数{}",vo);
+		ResponseResult<Object> rspResult = new ResponseResult<Object>();
+		
+		try {
+			List<GoodsConversionRateVo> list = goodsConversionRateMapper.singleGoodsConversionByGoodsId(vo);
+			if (CollectionUtils.isEmpty(list)) {
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+			rspResult.setData(list);
+			return rspResult;
+		} catch (Exception e) {
+			logger.error("【商品资料管理-单品-商品】查询详情出错",e);
+			return rspResult.err();
+		}
+	}
+
+	@Override
+	public ResponseResult<GoodsConversionRateVo> addGoodsConversionRate(GoodsConversionRateVo vo) {
+
+		logger.info("【商品资料管理-"+(vo.getGoodsMode()==0?"单品":"多规格")+"-商品】新增原始商品详情，参数{}",vo);
+		GoodsConversionRateBean bean = new GoodsConversionRateBean();
+		ResponseResult<GoodsConversionRateVo> result = new ResponseResult<GoodsConversionRateVo>();
+		try {
+			PropertyUtils.copyProperties(bean,vo);
+			
+			// 新增只保存不为null的数据。
+			goodsConversionRateMapper.insertAndGetId(bean);
+			vo.setId(bean.getId());
+			result.setData(vo);
+			return result.success();
+		} catch (Exception e) {
+			result.setCode("1111");
+			result.setMsg("新增失败！");
+			logger.error("【商品资料管理-"+(vo.getGoodsMode()==0?"单品":"多规格")+"-商品】新增原始商品详情异常",e);
+			return result;
+		}
+	}
+	
+	@Override
+	public ResponseResult<GoodsConversionRateVo> updateGoodsConversionRate(GoodsConversionRateVo vo) {
+		logger.info("【商品资料管理-"+(vo.getGoodsMode()==0?"单品":"多规格")+"-商品】修改详情参数{}",vo);
+		GoodsConversionRateBean bean = new GoodsConversionRateBean();
+		ResponseResult<GoodsConversionRateVo> result = new ResponseResult<GoodsConversionRateVo>();
+		try {
+			PropertyUtils.copyProperties(bean,vo);
+			// 只更新不为null的字段
+			goodsConversionRateMapper.updateByPrimaryKeySelective(bean);
+			return result.success();
+		} catch (Exception e) {
+			result.setCode("1112");
+			result.setMsg("更新失败！");
+			logger.error("【商品资料管理-"+(vo.getGoodsMode()==0?"单品":"多规格")+"-商品】修改异常",e);
+			return result;
+		}
+	}
+	
+	@Override
+	public ResponseResult<GoodsConversionRateVo> deleteGoodsConversionRate(GoodsConversionRateVo vo) {
+		logger.info("【商品资料管理-"+(vo.getGoodsMode()==0?"单品":"多规格")+"-商品】删除详情参数{}",vo);
+		GoodsConversionRateBean bean = new GoodsConversionRateBean();
+		ResponseResult<GoodsConversionRateVo> result = new ResponseResult<GoodsConversionRateVo>();
+		try {
+			PropertyUtils.copyProperties(bean,vo);
+			// 只更新不为null的字段
+			if (goodsConversionRateMapper.delete(bean) > 0){
+				result.setCode("0001");
+				result.setMsg("删除失败！请联系系统管理员！");
+			}
+			return result;
+		} catch (Exception e) {
+			result.setCode("1113");
+			result.setMsg("删除失败！");
+			logger.error("【商品资料管理-"+(vo.getGoodsMode()==0?"单品":"多规格")+"-商品】删除异常",e);
+			return result;
+		}
+	}
+}

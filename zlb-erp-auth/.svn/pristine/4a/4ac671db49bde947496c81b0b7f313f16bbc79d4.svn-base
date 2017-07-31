@@ -1,0 +1,52 @@
+package com.zhilianbao.erp.auth.mapper.user;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.user.RoleBean;
+import com.zhilianbao.erp.auth.vo.user.RolePageVo;
+import com.zhilianbao.erp.auth.vo.user.RoleVo;
+
+import tk.mybatis.mapper.common.Mapper;
+
+public interface RoleMapper extends Mapper<RoleBean> {
+
+	/**
+	 * 分页查找用户角色
+	 * @param vo
+	 * @return
+	 */
+	List<RoleVo> queryRolesListByPage(RolePageVo vo);
+
+	/**
+	 * 删除一个角色
+	 * @param role
+	 */
+	void deleteRoleById(RoleBean role);
+
+	/**
+	 * 通过角色ID查找角色
+	 * @param vo
+	 * @return
+	 */
+	RoleVo findRoleById(RoleVo vo);
+
+	/**
+	 * 查找所有角色列表
+	 * @param vo
+	 * @return
+	 */
+	List<RoleVo> findAll(RolePageVo vo);
+	/**
+	 * 通过角色查找
+	 * @param rvo
+	 * @return
+	 */
+	List<RoleVo> findRoleByUserId(RoleVo rvo);
+
+	/**
+	 * 通过角色名称查找角色
+	 * @param vo
+	 * @return
+	 */
+	List<RoleVo> findByRoleName(RoleVo vo);
+}

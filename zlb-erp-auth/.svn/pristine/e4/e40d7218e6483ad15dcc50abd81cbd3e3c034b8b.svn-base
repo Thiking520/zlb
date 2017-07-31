@@ -1,0 +1,54 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.goods.conversion.GoodsConversionRateBean;
+import com.zhilianbao.erp.auth.vo.goods.conversion.GoodsConversionRateResultVo;
+import com.zhilianbao.erp.auth.vo.goods.conversion.GoodsConversionRateVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 单品/多规格明细
+ * @Title: GoodsConversionRateMapper 
+ * @author: LiLinDong
+ * @date: 2017年6月27日 下午6:11:41 
+ * @Description:
+ */
+public interface GoodsConversionRateMapper extends BaseMapper<GoodsConversionRateBean> {
+	
+	/**
+	 * @Title: goodsConversionAndRecordRateByGoodsId 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: List<GoodsConversionRateResultVo>    返回类型 
+	 * @Description:根据goodsId获取多规格商品详情，每个多规格对象中都包含该多规格的原始商品转换率明细列表。
+	 */
+	List<GoodsConversionRateResultVo> goodsConversionAndRecordRateByGoodsId(GoodsConversionRateVo vo);
+	
+	/**
+	 * @Title: singleGoodsConversionByGoodsId 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: List<GoodsConversionRateVo>    返回类型 
+	 * @Description:单品商品：根据商品id查询原始商品转换率详情列表。
+	 */
+	List<GoodsConversionRateVo> singleGoodsConversionByGoodsId(GoodsConversionRateVo vo);
+	
+	/**
+	 * @Title: insertAndGetId 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: int    返回类型 
+	 * @Description:新增单品或者多规格商品的原始商品，新增后，id通过引用传递保存到传入的参数中，外面通过传入的实体对象调用getId()方法可得到新增后的id。
+	 */
+	int insertAndGetId(GoodsConversionRateBean bean);
+	
+	/**
+	 * @Title: getGoodsConversionRateListBySkuId 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: List<GoodsConversionRateVo>    返回类型 
+	 * @Description:根据规格id，查询该规格下所有原始商品转换率明细。
+	 */
+	GoodsConversionRateResultVo getGoodsConversionRateListBySkuId(GoodsConversionRateVo vo);
+}

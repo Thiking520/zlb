@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsPropertyMapper" >
+
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="property_name" property="propertyName" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="SMALLINT" />
+    <result column="is_must" property="isMust" jdbcType="SMALLINT" />
+    <result column="is_not_null" property="isNotNull" jdbcType="SMALLINT" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+
+    <collection property="itemList" javaType="ArrayList" column="id" ofType="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyItemVo" select="getPropertyItemList" >
+	</collection>
+  </resultMap>
+  
+  <!-- t_goods_property_item -->
+  <resultMap id="PropertyItemListResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyItemVo">  
+  	<id column="id" property="id" jdbcType="BIGINT" />
+    <result column="property_id" property="propertyId" jdbcType="BIGINT" />
+    <result column="property_value" property="propertyValue" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <resultMap id="getByGoodsIdResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="property_name" property="propertyName" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="SMALLINT" />
+    <result column="is_must" property="isMust" jdbcType="SMALLINT" />
+    <result column="is_not_null" property="isNotNull" jdbcType="SMALLINT" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    
+    <result column="property_item_value" property="propertyItemValue" jdbcType="VARCHAR" />
+    
+    <collection property="itemList" javaType="ArrayList" column="id" ofType="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyItemVo" select="getPropertyItemList" >
+	</collection>
+  </resultMap>
+  
+  <!-- 主表列集合 -->
+  <sql id="Base_Column_List" >
+    id, operator_id, property_name, type, is_must, is_not_null, create_time, creator, update_time, 
+    modifier, deleted
+  </sql>
+  <!-- 详情表列集合 -->
+  <sql id="Item_Column_List" >
+    id, property_id, property_value, sort_index
+  </sql>
+  <!-- 中间表列集合 -->
+  <sql id="property_mid_List" >
+    id, property_id, goods_id, property_item_id, property_item_value
+  </sql>
+  
+  <!-- 分页查询 -->
+  <select id="queryListByPage" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> from t_goods_property property
+  	where property.deleted = 0 and property.operator_id = #{operatorId}
+  	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND property.property_name like concat('%',#{searchKeyword},'%')
+  	</if>
+  </select>	
+  <select id="getPropertyItemList" resultMap="PropertyItemListResultMap"  >
+	SELECT <include refid="Item_Column_List" /> from t_goods_property_item item
+	where item.property_id = #{id} 
+  </select>
+	
+  <!-- 查询详情 -->
+  <select id="queryById" resultMap="BaseResultMap">
+	SELECT <include refid="Base_Column_List" /> from t_goods_property property
+  	where property.deleted = 0 and property.id = #{id} and property.operator_id = #{operatorId}
+  </select>
+  
+  <!-- 根据goodsId查询 -->
+  <select id="queryByGoodsId" resultMap="getByGoodsIdResultMap">
+	SELECT property.*,list.property_item_value from (
+	SELECT <include refid="Base_Column_List" /> from t_goods_property) property
+	LEFT JOIN t_goods_property_list list on property.id = list.property_id
+	where list.goods_id = #{id} and property.operator_id = #{operatorId}
+  </select>
+	
+<!--   <select id="queryListByPage" resultMap="BaseResultMap"> -->
+<!--   	SELECT p.id, p.operator_id, p.property_name, p.type, p.is_not_null , -->
+<!--   	(SELECT GROUP_CONCAT(cast(item.property_value as char(10)) SEPARATOR '、') from t_goods_property_item item where item.property_id=p.id) as itemListName  -->
+<!--   	from t_goods_property p where p.deleted = 0 -->
+<!--   </select> -->
+</mapper>

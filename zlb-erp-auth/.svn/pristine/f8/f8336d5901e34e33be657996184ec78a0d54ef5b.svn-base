@@ -1,0 +1,165 @@
+package com.zhilianbao.erp.auth.impl.operators;
+
+
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.user.OperatorCompanyBean;
+import com.zhilianbao.erp.auth.mapper.operators.OperatorMapper;
+import com.zhilianbao.erp.auth.service.operators.IOperatorService;
+import com.zhilianbao.erp.auth.vo.operators.OperatorVo;
+import com.zhilianbao.erp.auth.vo.operators.ParaOperatorVo;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+import com.zhilianbao.erp.common.vo.StatusVo;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
+
+@Service
+public class OperatorServiceImpl implements IOperatorService {
+	private Logger logger = LogManager.getLogger(OperatorServiceImpl.class);
+	@Autowired
+	private OperatorMapper operatorMapper;
+
+	@Override
+	public ResponseValue<Page<OperatorVo>> qryOperator(ParaOperatorVo paraOperatorVo) {
+		ResponseValue<Page<OperatorVo>> responseValue=new ResponseValue<Page<OperatorVo>>();
+		Page<OperatorVo> page=new Page<OperatorVo>();
+		
+		PageHelper.offsetPage(paraOperatorVo.getViewSearchVo().getOffset(),
+				paraOperatorVo.getViewSearchVo().getPageSize());
+		PageInfo<OperatorVo> pageInfo=null;
+		try {
+			pageInfo=operatorMapper.qryOperator(paraOperatorVo);
+		} catch (Exception e) {
+			logger.error("OperatorServiceImpl,qryOperator",e);
+			return responseValue.err();
+		}
+		
+		page.setTotal(pageInfo.getTotal());
+		page.setRows(pageInfo.getList());
+		return responseValue.success(page);
+	}
+
+	@Override
+	public ResponseValue<String> addOperator(OperatorVo operatorVo) {
+		ResponseValue<String> responseValue=new ResponseValue<String>();
+		OperatorCompanyBean operatorCompanyBean = new OperatorCompanyBean();
+		try {
+			operatorCompanyBean.setCompanyKey(operatorVo.getCompanyKey());
+			OperatorCompanyBean keyBean = operatorMapper.selectOne(operatorCompanyBean);
+			if(keyBean != null){
+				return responseValue.failure("key值存在！");
+			}
+			
+			operatorCompanyBean.setCompanyKey(null);
+			operatorCompanyBean.setCompanyCode(operatorVo.getCompanyCode());
+			OperatorCompanyBean codeBean = operatorMapper.selectOne(operatorCompanyBean);
+			if(codeBean != null){
+				return responseValue.failure("编码存在！");
+			}
+			
+			PropertyUtils.copyProperties(operatorCompanyBean, operatorVo);
+			operatorCompanyBean.setId(null);
+			int num=operatorMapper.insertSelective(operatorCompanyBean);
+			if(num<1){
+				return responseValue.failure();
+			}
+		} catch (Exception e) {
+			logger.error("OperatorServiceImpl,addOperator",e);
+			return responseValue.err();
+		} 
+		return responseValue.success();
+	}
+
+	@Override
+	public ResponseValue<OperatorVo> loadOperatorUpdate(OperatorVo operatorVo) {
+		ResponseValue<OperatorVo> responseValue=new ResponseValue<OperatorVo>();
+		try{
+		    OperatorCompanyBean operatorCompanyBean=operatorMapper.selectByPrimaryKey(operatorVo.getId());
+			if(operatorCompanyBean != null){
+				PropertyUtils.copyProperties(operatorVo, operatorCompanyBean);
+			}
+		}catch (Exception e){
+			logger.error("OperatorServiceImpl,loadOperatorUpdate",e);
+			return responseValue.err();
+		}
+		return responseValue.success(operatorVo);
+	}
+
+	@Override
+	public ResponseValue<String> updateOperator(OperatorVo operatorVo) {
+		ResponseValue<String> responseValue=new ResponseValue<String>();
+		OperatorCompanyBean operatorCompanyBean = new OperatorCompanyBean();
+		try{
+			operatorCompanyBean.setCompanyKey(operatorVo.getCompanyKey());
+			OperatorCompanyBean keyBean = operatorMapper.selectOne(operatorCompanyBean);
+			if(keyBean != null && keyBean.getId()!=operatorVo.getId()){
+				return responseValue.failure("key值存在！");
+			}
+			
+			operatorCompanyBean.setCompanyKey(null);
+			operatorCompanyBean.setCompanyCode(operatorVo.getCompanyCode());
+			OperatorCompanyBean codeBean = operatorMapper.selectOne(operatorCompanyBean);
+			if(codeBean != null && codeBean.getId()!=operatorVo.getId()){
+				return responseValue.failure("编码存在！");
+			}
+			
+			PropertyUtils.copyProperties(operatorCompanyBean,operatorVo);
+			int num=operatorMapper.updateByPrimaryKeySelective(operatorCompanyBean);
+			if(num<1){
+				return responseValue.failure();
+			}
+			
+		}catch(Exception e){
+			logger.error("OperatorServiceImpl,updateOperator",e);
+			return responseValue.err();
+		}
+		return responseValue.success();
+	}
+
+	@Override
+	public ResponseValue<String> updateStatusOperator(StatusVo statusVo){
+		ResponseValue<String> responseValue=new ResponseValue<String>();
+		OperatorCompanyBean operatorCompanyBean = new OperatorCompanyBean();
+		try{
+			Iterable<String> ids=statusVo.getIds();
+			Example example=new Example(OperatorCompanyBean.class);
+		    Criteria criteria = example.createCriteria();
+		    criteria.andIn("id", ids);
+		
+			operatorCompanyBean.setEnabled(statusVo.getStatus());
+			operatorCompanyBean.setModifier(statusVo.getModifier());
+			int num=operatorMapper.updateByExampleSelective(operatorCompanyBean, example);
+			if(num<1){
+				return responseValue.failure();
+            } 
+			
+		}catch(Exception e){
+			logger.error("OperatorServiceImpl,updateStatusOperator",e);
+			return responseValue.err();
+		}
+		return responseValue.success();
+	}
+
+	@Override
+	public List<OperatorVo> mulOperatorName(List<Long> list) {
+//		if(list == null || list.size() ==0){
+//			logger.warn("根据运营商id查询名称，参数list 为空");
+//			return null;
+//		}
+		List<OperatorVo> nameList=operatorMapper.mulOperatorName(list);
+		return nameList;
+	}
+
+	
+
+}

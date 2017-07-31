@@ -1,0 +1,21 @@
+package com.zhilianbao.erp.auth.entity.archives;
+
+
+
+public class DeliveryScopeNewBean extends DeliveryScopeBean{
+    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String deliveryRecordType;
+
+
+	public String getDeliveryRecordType() {
+		return deliveryRecordType;
+	}
+
+	public void setDeliveryRecordType(String deliveryRecordType) {
+		this.deliveryRecordType = deliveryRecordType;
+	}
+}

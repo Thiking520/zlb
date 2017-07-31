@@ -1,0 +1,24 @@
+package com.zhilianbao.erp.auth.impl.pda;
+
+import java.util.Map;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.mapper.pda.PdaAppInfoMapper;
+import com.zhilianbao.erp.auth.service.pda.IPdaAppBaseInfoService;
+import com.zhilianbao.erp.auth.vo.pda.PdaAppInfoVo;
+
+@Service
+public class PdaAppBaseInfoServiceImpl implements IPdaAppBaseInfoService{
+
+	@Autowired
+	private PdaAppInfoMapper appInfoMapper;
+	@Override
+	public PdaAppInfoVo getAppVersionInfo(Map<String, Object> map) {
+		
+		return appInfoMapper.getAppVersionInfo(map);
+	}
+
+}

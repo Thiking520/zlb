@@ -1,0 +1,164 @@
+package com.zhilianbao.erp.auth.impl.parameter;
+
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.parameter.SystemCodeRuleBean;
+import com.zhilianbao.erp.auth.mapper.parameter.SystemCodeRuleMapper;
+import com.zhilianbao.erp.auth.service.parameter.ISystemCodeRuleService;
+import com.zhilianbao.erp.auth.vo.parameter.SystemCodeRuleVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 
+ * @company zhilianbao
+ * @author kuangzengye
+ * @date   2017年3月13日上午11:45:04
+ * @description:编码规则业务实现类
+ */
+@Service
+public class SystemCodeRuleServiceImpl implements ISystemCodeRuleService {
+	
+	private static final Logger logger=LogManager.getLogger(SystemCodeRuleServiceImpl.class);
+	
+	@Autowired
+	private SystemCodeRuleMapper systemCodeRuleMapper;
+	
+	@Override
+	public ResponseResult<SystemCodeRuleVo> getSystemCodeRuleById(Long id) {
+		ResponseResult<SystemCodeRuleVo> rspResult = new ResponseResult<SystemCodeRuleVo>();
+		try {
+			SystemCodeRuleVo vo = new SystemCodeRuleVo();
+			if(id == null){
+				rspResult = new ResponseResult<SystemCodeRuleVo>(ResultEnum.EMPTY);
+				rspResult.setData(vo);
+				return rspResult;
+			}
+			SystemCodeRuleBean bean = systemCodeRuleMapper.selectByPrimaryKey(id);
+			PropertyUtils.copyProperties(vo, bean);
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("通过Id查询系统系统参数数据出错！{}",id,e);
+			return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;		
+	}
+	
+	@Override
+	public ResponseResult<SystemCodeRuleVo> getPageByVo(ViewSearchVo vo) {
+		ResponseResult<SystemCodeRuleVo> rspResult = new ResponseResult<SystemCodeRuleVo>();
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			List<SystemCodeRuleVo> list = systemCodeRuleMapper.getPageByVo(vo);
+			
+			if (Constants.ZERO == list.size()) {
+				return new ResponseResult<SystemCodeRuleVo>(ResultEnum.EMPTY);
+			}
+			PageInfo<SystemCodeRuleVo> page = new PageInfo<SystemCodeRuleVo>(list);
+			long total = page.getTotal();// 获取数据库中的总条数
+			if (Constants.ZERO == total) {
+				return new ResponseResult<SystemCodeRuleVo>(ResultEnum.EMPTY);
+			}
+			rspResult.setTotal(total);
+			rspResult.setRows(list);
+		} catch (Exception e) {
+			logger.error("分页查询系统参数数据出错", e);
+			return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<SystemCodeRuleVo> addSystemCodeRule(SystemCodeRuleVo vo) {
+		ResponseResult<SystemCodeRuleVo> rspResult = new ResponseResult<SystemCodeRuleVo>();
+		try {
+			SystemCodeRuleBean record = new SystemCodeRuleBean();
+			PropertyUtils.copyProperties(record, vo);
+			record.setCreateTime(new Date());
+			record.setCreator(1L);//TODO 从同一方法中获取
+			record.setUpdateTime(record.getCreateTime());
+			record.setModifier(record.getCreator());
+			systemCodeRuleMapper.insertSelective(record);
+			// TODO 后期优化
+			ParamInit.updateDictCacheData();
+		} catch (Exception e) {
+			logger.error("新增系统参数数据出错,{}",vo, e);
+			return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+	
+	@Override
+	public ResponseResult<SystemCodeRuleVo> updateSystemCodeRule(SystemCodeRuleVo vo) {
+		ResponseResult<SystemCodeRuleVo> rspResult = new ResponseResult<SystemCodeRuleVo>();
+		try {
+			SystemCodeRuleBean record = new SystemCodeRuleBean();
+			PropertyUtils.copyProperties(record, vo);
+			record.setUpdateTime(new Date());
+			record.setModifier(1L);//从同一方法中获取操作人ID
+			systemCodeRuleMapper.updateByPrimaryKeySelective(record);
+			
+			// TODO 后期优化
+			ParamInit.updateDictCacheData();
+		} catch (Exception e) {
+			logger.error("更新系统参数数据出错，{}",vo, e);
+			return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<SystemCodeRuleVo> effectSystemCodeRule(SystemCodeRuleVo vo) {
+		ResponseResult<SystemCodeRuleVo> rspResult = new ResponseResult<SystemCodeRuleVo>();
+		try {
+			SystemCodeRuleBean record = new SystemCodeRuleBean();
+			record.setId(vo.getId());
+			record.setStatus(vo.getStatus());
+			record.setUpdateTime(new Date());
+			record.setModifier(1L);//从同一方法中获取操作人ID TODO
+			systemCodeRuleMapper.updateByPrimaryKeySelective(record);
+			
+			// TODO 后期优化
+			ParamInit.updateDictCacheData();
+		} catch (Exception e) {
+			logger.error("更新系统参数数据出错，{}",vo, e);
+			return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+	
+//	@Override
+//	public ResponseResult<SystemCodeRuleVo> modifyDelSystemCodeRuleById(String type, Long id) {
+//		try {
+//			int count = systemCodeRuleMapper.deleteByPrimaryKeyAndType(type, id);
+//			if(count == 0){
+//				return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+//			}else {
+//				DictCacheUtil.remove(DictCacheUtil.getDictOfIdByType(type, id));
+//				return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SUCCESSE);
+//			}
+//		} catch (Exception e) {
+//			logger.error("", e);
+//			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//			return new ResponseResult<SystemCodeRuleVo>(ResultEnum.SYS_ERR);
+//		}
+//	}
+	
+	
+//	@Override
+//	public ResponseResult<List<Map<String,Object>>> getAllTypeMapList() {
+//		return new ResponseResult<List<Map<String,Object>>>(systemCodeRuleMapper.getAllTypeMapList());
+//	}
+		
+}

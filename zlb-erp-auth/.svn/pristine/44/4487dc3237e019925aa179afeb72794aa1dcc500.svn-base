@@ -1,0 +1,399 @@
+package com.zhilianbao.erp.auth.entity.employee;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+
+@Table(name = "t_employee_information")
+public class EmployeeBean extends BaseBean implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(name="uniqueKey")
+    private String uniqueKey;
+
+    /**
+     * 运营商ID
+     */
+    @Column(name = "operator_id")
+    private Long operatorId;
+
+    /**
+     * 员工职位表ID,t_employee_occupation
+     */
+    @Column(name = "occupation_id")
+    private Long occupationId;
+
+    /**
+     * 人物关系表ID,t_person_kindred
+     */
+    @Column(name = "kindred_id")
+    private Long kindredId;
+    
+    @Column(name = "distribution_point")
+    private Long distributionPoint;
+
+    /**
+     * 户籍
+     */
+    @Column(name = "registry_city")
+    private String registryCity;
+
+    /**
+     * 中文名称
+     */
+    @Column(name = "cn_name")
+    private String cnName;
+
+    /**
+     * 英文名称
+     */
+    @Column(name = "en_name")
+    private String enName;
+
+    /**
+     * 身份证号码
+     */
+    @Column(name = "id_no")
+    private String idNo;
+
+    /**
+     * 驾驶证号码
+     */
+    @Column(name = "driver_no")
+    private String driverNo;
+
+    /**
+     * 户籍地址
+     */
+    @Column(name = "census_address")
+    private String censusAddress;
+
+    /**
+     * 现居地地址
+     */
+    @Column(name = "current_address")
+    private String currentAddress;
+
+    /**
+     * 手机号码
+     */
+    @Column(name = "mobile_no")
+    private String mobileNo;
+
+    /**
+     * 紧急联系人
+     */
+    @Column(name = "kindred_name")
+    private String kindredName;
+    
+    /**
+     * 紧急联系人号码
+     */
+    @Column(name = "emergent_mobile_no")
+    private String emergentMobileNo;
+
+    /**
+     * 描述
+     */
+    private String description;
+
+    /**
+     * 启用/禁用状态，true启用，false禁用
+     */
+    private int enabled;
+
+
+    /**
+     * @return id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取运营商ID
+     *
+     * @return operator_id - 运营商ID
+     */
+    public Long getOperatorId() {
+        return operatorId;
+    }
+
+    /**
+     * 设置运营商ID
+     *
+     * @param operatorId 运营商ID
+     */
+    public void setOperatorId(Long operatorId) {
+        this.operatorId = operatorId;
+    }
+
+    /**
+     * 获取员工职位表ID,t_employee_occupation
+     *
+     * @return occupation_id - 员工职位表ID,t_employee_occupation
+     */
+    public Long getOccupationId() {
+        return occupationId;
+    }
+
+    /**
+     * 设置员工职位表ID,t_employee_occupation
+     *
+     * @param occupationId 员工职位表ID,t_employee_occupation
+     */
+    public void setOccupationId(Long occupationId) {
+        this.occupationId = occupationId;
+    }
+
+    /**
+     * 获取人物关系表ID,t_person_kindred
+     *
+     * @return kindred_id - 人物关系表ID,t_person_kindred
+     */
+    public Long getKindredId() {
+        return kindredId;
+    }
+
+    /**
+     * 设置人物关系表ID,t_person_kindred
+     *
+     * @param kindredId 人物关系表ID,t_person_kindred
+     */
+    public void setKindredId(Long kindredId) {
+        this.kindredId = kindredId;
+    }
+
+    public String getUniqueKey() {
+		return uniqueKey;
+	}
+
+	public void setUniqueKey(String uniqueKey) {
+		this.uniqueKey = uniqueKey;
+	}
+
+	
+	public String getRegistryCity() {
+		return registryCity;
+	}
+
+	public void setRegistryCity(String registryCity) {
+		this.registryCity = registryCity;
+	}
+
+	/**
+     * 获取中文名称
+     *
+     * @return cn_name - 中文名称
+     */
+    public String getCnName() {
+        return cnName;
+    }
+
+    /**
+     * 设置中文名称
+     *
+     * @param cnName 中文名称
+     */
+    public void setCnName(String cnName) {
+        this.cnName = cnName;
+    }
+
+    /**
+     * 获取英文名称
+     *
+     * @return en_name - 英文名称
+     */
+    public String getEnName() {
+        return enName;
+    }
+
+    /**
+     * 设置英文名称
+     *
+     * @param enName 英文名称
+     */
+    public void setEnName(String enName) {
+        this.enName = enName;
+    }
+
+    /**
+     * 获取身份证号码
+     *
+     * @return id_no - 身份证号码
+     */
+    public String getIdNo() {
+        return idNo;
+    }
+
+    /**
+     * 设置身份证号码
+     *
+     * @param idNo 身份证号码
+     */
+    public void setIdNo(String idNo) {
+        this.idNo = idNo;
+    }
+
+    /**
+     * 获取驾驶证号码
+     *
+     * @return driver_no - 驾驶证号码
+     */
+    public String getDriverNo() {
+        return driverNo;
+    }
+
+    /**
+     * 设置驾驶证号码
+     *
+     * @param driverNo 驾驶证号码
+     */
+    public void setDriverNo(String driverNo) {
+        this.driverNo = driverNo;
+    }
+
+    /**
+     * 获取户籍地址
+     *
+     * @return census_address - 户籍地址
+     */
+    public String getCensusAddress() {
+        return censusAddress;
+    }
+
+    /**
+     * 设置户籍地址
+     *
+     * @param censusAddress 户籍地址
+     */
+    public void setCensusAddress(String censusAddress) {
+        this.censusAddress = censusAddress;
+    }
+
+    /**
+     * 获取现居地地址
+     *
+     * @return current_address - 现居地地址
+     */
+    public String getCurrentAddress() {
+        return currentAddress;
+    }
+
+    /**
+     * 设置现居地地址
+     *
+     * @param currentAddress 现居地地址
+     */
+    public void setCurrentAddress(String currentAddress) {
+        this.currentAddress = currentAddress;
+    }
+
+    /**
+     * 获取手机号码
+     *
+     * @return mobile_no - 手机号码
+     */
+    public String getMobileNo() {
+        return mobileNo;
+    }
+
+    /**
+     * 设置手机号码
+     *
+     * @param mobileNo 手机号码
+     */
+    public void setMobileNo(String mobileNo) {
+        this.mobileNo = mobileNo;
+    }
+
+    /**
+     * 获取紧急联系人号码
+     *
+     * @return emergent_mobile_no - 紧急联系人号码
+     */
+    public String getEmergentMobileNo() {
+        return emergentMobileNo;
+    }
+
+    /**
+     * 设置紧急联系人号码
+     *
+     * @param emergentMobileNo 紧急联系人号码
+     */
+    public void setEmergentMobileNo(String emergentMobileNo) {
+        this.emergentMobileNo = emergentMobileNo;
+    }
+
+    /**
+     * 获取描述
+     *
+     * @return description - 描述
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * 设置描述
+     *
+     * @param description 描述
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    
+    /**
+     * 设置启用/禁用状态，true启用，false禁用
+     *
+     * @param enabled 启用/禁用状态，true启用，false禁用
+     */
+    
+    
+	public void setKindredName(String kindredName) {
+		this.kindredName = kindredName;
+	}
+
+	public int getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(int enabled) {
+		this.enabled = enabled;
+	}
+
+	public String getKindredName() {
+		return kindredName;
+	}
+
+	public Long getDistributionPoint() {
+		return distributionPoint;
+	}
+
+	public void setDistributionPoint(Long distributionPoint) {
+		this.distributionPoint = distributionPoint;
+	}
+	
+	
+}

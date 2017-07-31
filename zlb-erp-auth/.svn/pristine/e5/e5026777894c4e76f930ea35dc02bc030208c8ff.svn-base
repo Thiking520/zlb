@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsCollectionMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsCollectionVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_id" property="goodsId" jdbcType="BIGINT" />
+    <result column="goods_item_id" property="goodsItemId" jdbcType="BIGINT" />
+    <result column="goods_sku_id" property="goodsSkuId" jdbcType="BIGINT" />
+    <result column="used_amount" property="usedAmount" jdbcType="INTEGER" />
+    <result column="amount" property="amount" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <resultMap id="collectionDetailsResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsCollectionVo" >
+  	<id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_id" property="goodsId" jdbcType="BIGINT" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="goods_mode" property="goodsMode" jdbcType="SMALLINT" />
+    <result column="com_goods_id" property="comGoodsId" jdbcType="BIGINT" />
+  	<result column="goods_code" property="goodsCode" jdbcType="VARCHAR" />
+  	<result column="goods_image_url" property="goodsImageUrl" jdbcType="VARCHAR" />
+  	<result column="used_store" property="usedStore" jdbcType="INTEGER" />
+    <result column="amount" property="amount" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, goods_id, goods_item_id, goods_sku_id, used_amount, amount
+  </sql>
+  
+  <!-- 组合商品：根据goodsId查询详情列表 -->
+  <select id="queryCollectionDetailsByGoodsId" resultMap="collectionDetailsResultMap">
+  	SELECT * from 
+	(SELECT collection.id, collection.goods_id, collection.goods_item_id as com_goods_id, goods.goods_mode, goods.goods_code, goods.title as title, goods.goods_image_url, collection.used_store, collection.amount, 
+    (SELECT dict.dict_desc from t_system_dict dict where dict.dict_type = 'goods_unit' and dict.dict_value = stock.sale_unit and dict.operator_id = goods.operator_id) as sale_unit_name   
+	from t_goods_collection collection 
+	LEFT JOIN t_goods_item item on item.id = collection.goods_item_id
+	LEFT JOIN t_goods goods on goods.id = item.goods_id
+    LEFT JOIN t_goods_stock stock on stock.id = item.goods_stock_id
+	where goods.goods_mode=0
+	UNION
+	SELECT collection.id, collection.goods_id, collection.goods_sku_id as com_goods_id, goods.goods_mode, goods.goods_code, 
+    CONCAT(goods.title,"+",(SELECT GROUP_CONCAT(cast(sku.sku_name as char) SEPARATOR '-') from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id)) as title, 
+    goods.goods_image_url, collection.used_store, collection.amount ,
+    (SELECT dict.dict_desc from t_system_dict dict where dict.dict_type = 'goods_unit' and dict.dict_value = stock.sale_unit and dict.operator_id = goods.operator_id) as saleUnit
+	from t_goods_collection collection 
+	LEFT JOIN t_goods_sku_list list on list.id = collection.goods_sku_id
+	LEFT JOIN t_goods goods on goods.id = list.goods_id
+    LEFT JOIN t_goods_stock stock on stock.id = list.goods_stock_id
+	where goods.goods_mode=1) tmp
+	where tmp.goods_id = #{goodsId}
+  </select>
+  
+  <!-- 批量删除 -->
+  <update id="deleteBatchByIds">
+  	delete from t_goods_collection where id in 
+   	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+  <!-- 销售规格页签保存时，判断界面删除的规格有没有被组合商品引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+  		SELECT COUNT(*) from t_goods_collection collection where collection.goods_sku_id in 
+  		<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+	   		#{item}
+	   	</foreach>
+  </select>
+  
+  <!-- 查询组合商品 -->
+  <select id="querCollection" resultType="com.zhilianbao.erp.auth.vo.goods.GoodsCollectionVo">
+  	SELECT goods.id, (CASE
+	WHEN collection.goods_item_id != 'null' THEN
+		(SELECT title from t_goods where id in(SELECT goods_id from t_goods_item where id = collection.goods_item_id))
+	ELSE
+		(SELECT title from t_goods where id in(SELECT goods_id from t_goods_sku_list where id = collection.goods_sku_id))
+	END) as title,collection.goods_item_id, collection.goods_sku_id from t_goods_collection collection 
+	LEFT JOIN t_goods goods on collection.goods_id = goods.id
+	where goods.goods_status != 3 and goods.operator_id = #{operatorId} and goods.goods_mode = 2;
+  </select>
+</mapper>

@@ -1,0 +1,451 @@
+package com.zhilianbao.erp.auth.impl.user;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.employee.EmployeeAccountsListBean;
+import com.zhilianbao.erp.auth.entity.employee.EmployeeBean;
+import com.zhilianbao.erp.auth.entity.user.UserAdminBean;
+import com.zhilianbao.erp.auth.entity.user.UserRoleListBean;
+import com.zhilianbao.erp.auth.mapper.employee.EmployeeAccountsListMapper;
+import com.zhilianbao.erp.auth.mapper.employee.EmployeeMapper;
+import com.zhilianbao.erp.auth.mapper.user.UserMapper;
+import com.zhilianbao.erp.auth.mapper.user.UserRoleListMapper;
+import com.zhilianbao.erp.auth.service.user.IUserService;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeAccountsListVo;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeArchiveVo;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeVo;
+import com.zhilianbao.erp.auth.vo.user.LoginManagerOperatorVo;
+import com.zhilianbao.erp.auth.vo.user.LoginManagerVo;
+import com.zhilianbao.erp.auth.vo.user.LoginMenuVo;
+import com.zhilianbao.erp.auth.vo.user.LoginOperatorVo;
+import com.zhilianbao.erp.auth.vo.user.LoginUserVo;
+import com.zhilianbao.erp.auth.vo.user.LoginVo;
+import com.zhilianbao.erp.auth.vo.user.RetUserVo;
+import com.zhilianbao.erp.auth.vo.user.UserPageVo;
+import com.zhilianbao.erp.auth.vo.user.UserRoleListVo;
+import com.zhilianbao.erp.auth.vo.user.UserVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.redis.RedisCache;
+import com.zhilianbao.erp.common.util.MD5;
+import com.zhilianbao.erp.common.util.UuidUtil;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+
+@Service
+public class UserServiceImpl implements IUserService {
+	
+	private static Logger logger=LogManager.getLogger(UserServiceImpl.class);
+
+	@Autowired
+	private UserMapper userMapper;
+	
+	@Autowired
+	private UserRoleListMapper userRoleMappper;
+	
+	@Autowired
+	private EmployeeMapper empMapper;
+	
+	@Autowired
+	private EmployeeAccountsListMapper eaListMapper;
+	
+	@Override
+	public ResponseValue<LoginUserVo> doLogin(LoginVo loginVo,int loginType) {
+		ResponseValue<LoginUserVo> responseValue = new ResponseValue<LoginUserVo>();
+		LoginUserVo loginUserVo = null;
+		try {
+			if(0 == loginType){
+				loginUserVo = userMapper.doLogin(loginVo);
+			} else {
+				loginUserVo = userMapper.getUserInfoByLoginAccount(loginVo);
+			}
+			if (loginUserVo == null) {
+				return responseValue.failure(Constants.MSG_LOGIN_FAIL);
+			}
+			/**先写固定的token   start*/
+			String token = UuidUtil.getUUID();
+			// userVo.setToken(token);
+			loginUserVo.setToken("11111111111111111111111111111111");
+			/**先写固定的token   end*/
+		} catch (Exception e) {
+			logger.error("LoginImpl,doLogin", e);
+			return responseValue.err(Constants.MSG_LOGIN_ERR);
+		}
+		return responseValue.success(loginUserVo);
+	}
+
+	@Override
+	public ResponseValue<LoginManagerVo> queryAllMenu(LoginOperatorVo loginOperatorVo) {
+		ResponseValue<LoginManagerVo> responseValue=new ResponseValue<LoginManagerVo>();
+		LoginManagerVo loginManagerVo=new LoginManagerVo();
+		
+		List<LoginMenuVo> menuVoList=userMapper.queryAllMenu(loginOperatorVo);
+		
+		loginManagerVo.setLoginMenuVoList(menuVoList);
+		
+		return responseValue.success(loginManagerVo);
+	}
+	
+	@Override
+	public List<LoginManagerOperatorVo> qryManagerOperator(LoginOperatorVo loginOperatorVo) {
+		List<LoginManagerOperatorVo> manaOperatorIds=userMapper.qryManagerOperator(loginOperatorVo);
+		for(LoginManagerOperatorVo loginManagerOperatorVo:manaOperatorIds){
+			loginManagerOperatorVo.setOperatorIdToken(UuidUtil.getUUID());
+		}
+		return userMapper.qryManagerOperator(loginOperatorVo);
+	}
+	
+	@Override
+	public List<RetUserVo> mulUserName(List<Long> list) {
+		if(list == null || list.size() ==0){
+			logger.warn("根据用户id查询名称，参数list 为空");
+			return null;
+		}
+		List<RetUserVo> nameList=userMapper.mulUserName(list);
+		return nameList;
+	}
+	
+
+	/**
+	 * 分页查找所有用户列表
+	 */
+	@Override
+	public ResponseResult<UserVo> findAll(UserPageVo vo) {
+		ResponseResult<UserVo> response = new ResponseResult<UserVo>();
+		try {
+			// 与mysql中的limit参数一致offset,limit
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize()); // 核心分页代码 开启分页查询，后面第一条查询语句会被分页
+			// 注意:如果有两条查询语句，第二条不会被分页
+			List<UserVo> list = userMapper.queryUsersList(vo);
+			if (Constants.ZERO == list.size()) {
+				return new ResponseResult<UserVo>(ResultEnum.EMPTY);
+			}
+			PageInfo<UserVo> page = new PageInfo<UserVo>(list);
+			long total = page.getTotal();// 获取数据库中的总条数
+			List<UserVo> userList = page.getList();
+			if (CollectionUtils.isEmpty(userList)) {
+				return new ResponseResult<UserVo>(ResultEnum.EMPTY);
+			}
+			
+			//信息遍历，更换格式
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			for (UserVo userVo : userList) {
+				if(userVo.getCreateTime() != null) {
+					userVo.setCreateTimeStr(sdf.format(userVo.getCreateTime()));
+				}
+				if(userVo.getUpdateTime() != null) {
+					userVo.setUpdateTimeStr(sdf.format(userVo.getUpdateTime()));
+				}
+				if(userVo.getEnabled() == true) {
+					userVo.setEnabledStr("生效");
+				} else {
+					userVo.setEnabledStr("失效");
+				}
+			}
+			
+			//分页必填的两个参数
+			response.setTotal(total);
+			response.setRows(userList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<EmployeeArchiveVo> deleteUser(EmployeeArchiveVo vo) {
+		ResponseResult<EmployeeArchiveVo> response = new ResponseResult<EmployeeArchiveVo>();
+		try {
+			//查找该对应关系是否存在
+			EmployeeAccountsListVo userRoleVo = new EmployeeAccountsListVo();
+			userRoleVo.setId(vo.getId());
+			userRoleVo = eaListMapper.findById(userRoleVo);
+			if(userRoleVo == null) {
+				return new ResponseResult<EmployeeArchiveVo>(ResultEnum.EMPTY);
+			}
+			EmployeeAccountsListBean userRoleBean = new EmployeeAccountsListBean();
+			PropertyUtils.copyProperties(userRoleBean, userRoleVo);//将vo中的属性复制给role对象
+			userRoleBean.setUpdateTime(new Date());
+			userRoleBean.setDeleted(true);
+			eaListMapper.updateByPrimaryKeySelective(userRoleBean);
+			
+			
+			/*//先查找该用户是否存在
+			UserVo userVo = loginMapper.findUserById(vo);
+			if(userVo == null) {
+				return new ResponseResult<UserRoleListVo>(ResultEnum.EMPTY);
+			}
+			UserAdminBean userBean = new UserAdminBean();
+			PropertyUtils.copyProperties(userBean, userVo);//将vo中的属性复制给role对象
+			
+			//修改状态
+			userBean.setUpdateTime(new Date());
+			userBean.setModifier(1L);
+			userBean.setDeleted(true);
+			loginMapper.updateByPrimaryKeySelective(userBean);*/
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<UserVo> modifyStatus(UserVo vo) {
+		ResponseResult<UserVo> response = new ResponseResult<UserVo>();
+		try {
+			//先查找该用户是否存在
+			UserVo userVo = userMapper.findUserById(vo);
+			if(userVo == null) {
+				return new ResponseResult<UserVo>(ResultEnum.EMPTY);
+			}
+			UserAdminBean userBean = new UserAdminBean();
+			PropertyUtils.copyProperties(userBean, userVo);//将vo中的属性复制给role对象
+			
+			//修改状态
+			userBean.setUpdateTime(new Date());
+			if(userBean.getEnabled() == true) {
+				userBean.setEnabled(false);
+			} else {
+				userBean.setEnabled(true);
+			}
+			userMapper.updateByPrimaryKeySelective(userBean);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<UserVo> getUserInfo(UserVo vo) {
+		ResponseResult<UserVo> response = new ResponseResult<UserVo>();
+		try {
+			UserVo uvo = userMapper.getUserInfo(vo);
+			if(uvo == null) {
+				return new ResponseResult<UserVo>(ResultEnum.EMPTY);
+			}
+			response.setData(uvo);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<UserVo> addUserArchive(EmployeeArchiveVo vo) {
+		ResponseResult<UserVo> response = new ResponseResult<UserVo>();
+		try {
+			
+			//判断该帐号是否已经存在
+			UserVo idVo = null;
+			UserVo uservo = new UserVo();
+			uservo.setUserName(vo.getUserName());
+			uservo = userMapper.findUserNameIsExist(uservo);
+			boolean isOld = false;//用于标记帐号是新建的还是已存在的
+			if(uservo != null) {
+				idVo = uservo;
+				isOld = true;
+			} else {
+				//调用研发中心注册
+				
+				
+				
+				//第一步，创建帐号并且获取ID
+				UserAdminBean userBean = new UserAdminBean();
+				userBean.setCreateTime(new Date());
+				userBean.setCenterId(1L);
+				userBean.setCreator(vo.getUserId());
+				userBean.setDeleted(false);
+				userBean.setEnabled(true);
+				userBean.setUniquekey(new Date().getTime() + "");
+				userBean.setPwdMd5(MD5.produceUUID(MD5.produceUUID("123456")));
+				userBean.setMobileNo(vo.getMobileNo());
+				userBean.setNickname(vo.getEmpName());
+				userBean.setUserName(vo.getUserName());
+				userBean.setUpdateTime(new Date());
+				userBean.setLastLoginTime(new Date());
+				userBean.setRegisterTime(new Date());
+				userBean.setModifier(vo.getUserId());
+				userMapper.insertSelective(userBean);
+				idVo = new UserVo();
+				idVo.setId(userBean.getId());
+			}
+			//第二步，对该帐号赋予角色权限
+			//先查找该帐号是否已经有角色，有则修改
+			UserRoleListVo userRoleVo = new UserRoleListVo();
+			userRoleVo.setAdminId(idVo.getId());
+			userRoleVo.setRoleId(vo.getRoleId());
+			userRoleVo = userRoleMappper.findByUserAndRoleId(userRoleVo);
+			if(userRoleVo != null) {
+				userRoleVo.setUpdateTime(new Date());
+				userRoleVo.setRoleId(vo.getRoleId());
+				UserRoleListBean userRoleBean = new UserRoleListBean();
+				PropertyUtils.copyProperties(userRoleBean, userRoleVo);
+				userRoleMappper.updateByPrimaryKeySelective(userRoleBean);
+			} else {
+				//没有，新增
+				UserRoleListBean userRoleBean = new UserRoleListBean();
+				userRoleBean.setAdminId(idVo.getId());
+				userRoleBean.setRoleId(vo.getRoleId());
+				userRoleBean.setCreateTime(new Date());
+				userRoleBean.setDeleted(false);
+				userRoleBean.setUpdateTime(new Date());
+				userRoleBean.setCreator(vo.getUserId());
+				userRoleBean.setModifier(vo.getUserId());
+				userRoleMappper.insertSelective(userRoleBean);
+			}
+			//第三步，员工与配送点修改
+			EmployeeBean employeeBean = new EmployeeBean();
+			EmployeeVo employeeVo = new EmployeeVo();
+			employeeBean.setId(vo.getEmpId());
+			employeeVo = empMapper.queryEmpDetail(employeeBean);
+			if(employeeVo != null && employeeVo.getDistributionPoint() != vo.getPointId()) {
+				//如果该员工配送点与当前同，则修改，相同则不做处理
+				employeeVo.setUpdateTime(new Date());
+				employeeVo.setModifier(1L);
+				PropertyUtils.copyProperties(employeeBean, employeeVo);
+				empMapper.updateByPrimaryKeySelective(employeeBean);
+			}
+			//第四步，员工与该帐号绑定
+			EmployeeAccountsListVo eaListVo = new EmployeeAccountsListVo();
+			EmployeeAccountsListBean eaListBean = new EmployeeAccountsListBean();
+			//如果是旧帐号，如果帐号已经绑定，直接修改员工
+			if(isOld) {
+				//查找员工绑定关系
+				eaListVo.setAdminId(idVo.getId());
+				eaListVo = eaListMapper.findByAccount(eaListVo);
+				if(eaListVo != null) {
+					eaListVo.setEmployeeId(vo.getEmpId());
+					eaListVo.setUpdateTime(new Date());
+					eaListVo.setModifier(vo.getUserId()+"");
+					PropertyUtils.copyProperties(eaListBean, eaListVo);
+					eaListMapper.updateByPrimaryKeySelective(eaListBean);
+				}
+			} else {//新帐号直接新增
+				eaListVo.setUniquekey(new Date().getTime() +"");
+				eaListVo.setAdminId(idVo.getId());
+				eaListVo.setCreateTime(new Date());
+				eaListVo.setCreator(vo.getUserId()+"");
+				eaListVo.setDeleted(false);
+				eaListVo.setEmployeeId(vo.getEmpId());
+				eaListVo.setModifier(vo.getUserId()+"");
+				eaListVo.setUpdateTime(new Date());
+				PropertyUtils.copyProperties(eaListBean, eaListVo);
+				eaListMapper.insertSelective(eaListBean);
+			}
+		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+		return response;
+	}
+
+
+	/**
+    * @Title: getSimpleUserInfo
+    * @author chengjianhui
+    * @date 2017年3月23日上午11:32:56
+    * @param vo
+    * @return ResponseResult<UserVo>
+    * @description:获取用户基本信息
+    */
+	@Override
+	public ResponseResult<UserVo> getSimpleUserInfo(UserVo vo) {
+		ResponseResult<UserVo> response = new ResponseResult<UserVo>();
+		try {
+			String cacheKey = Constants.CURRENT_USER + vo.getUserName();
+			//优先从缓存获取用户信息
+			 UserVo uvo = RedisCache.get(UserVo.class, cacheKey);
+			 if(null != uvo){
+				 response.setData(uvo);
+				 return response;
+			 }
+			 
+			 uvo = userMapper.getSimpleUserInfo(vo);
+			if(uvo == null) {
+				return new ResponseResult<UserVo>(ResultEnum.EMPTY);
+			}
+			response.setData(uvo);
+			RedisCache.setex(cacheKey, uvo, 300);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public UserVo findIsExistByUserName(UserVo userVo) {
+		
+		return userMapper.findIsExistByUserName(userVo);
+	}
+
+	@Override
+	public boolean addUser(UserVo userAdminVo) {
+		try {
+			UserAdminBean userBean = new UserAdminBean();
+			PropertyUtils.copyProperties(userBean, userAdminVo);
+			userMapper.insertSelective(userBean);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public LoginUserVo login(LoginVo lvo) {
+		
+		return userMapper.doLogin(lvo);
+	}
+
+	@Override
+	public boolean isOwnThisMenu(UserVo usvo) {
+		try {
+			UserVo uv = userMapper.isOwnThisMenu(usvo);
+			if(uv == null) {
+				return false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean update(UserVo userVo) {
+		UserAdminBean userBean = new UserAdminBean();
+		try {
+			PropertyUtils.copyProperties(userBean, userVo);
+			userMapper.updateByPrimaryKeySelective(userBean);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+
+}

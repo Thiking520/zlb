@@ -1,0 +1,22 @@
+package com.zhilianbao.erp.auth.mapper.systemparameter;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.systemparameter.BaseAreaBean;
+import com.zhilianbao.erp.auth.vo.systemparameter.BaseAreaVo;
+
+import tk.mybatis.mapper.common.Mapper;
+/**
+ * 
+ * @author Tobin
+ *
+ */
+public interface BaseAreaMapper extends Mapper<BaseAreaBean> {
+	
+	public List<BaseAreaVo> queryArea(String cityName);
+	
+	public List<BaseAreaVo> mulArea(List<Long> list);
+	
+	public List<BaseAreaVo> queryAreaId(Long id);
+	
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsPropertyItemMapper" >
+
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyItemVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="property_id" property="propertyId" jdbcType="BIGINT" />
+    <result column="property_value" property="propertyValue" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="BIT" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, property_id, property_value, sort_index, create_time, creator, update_time, modifier, deleted
+  </sql>
+  
+  <!-- 批量删除 -->
+  <update id="deleteBatchByIds">
+  	update t_goods_property_item set deleted = true where id in 
+   	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+</mapper>

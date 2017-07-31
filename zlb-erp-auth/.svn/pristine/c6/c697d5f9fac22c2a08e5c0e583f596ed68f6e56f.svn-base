@@ -1,0 +1,27 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsItemBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsItemMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsItemService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsItemVo;
+@Service
+@Transactional
+public class GoodsItemServiceImpl implements IGoodsItemService {
+	
+	@Autowired
+	GoodsItemMapper goodsItemMapper;
+	
+	@Override
+	public void add(GoodsItemVo goodsItemVo) {
+		GoodsItemBean goodsItemBean = new GoodsItemBean();
+		goodsItemBean.setGoodsId(goodsItemVo.getGoodsId());
+		goodsItemBean.setGoodsStockId(goodsItemVo.getGoodsStockId());
+		goodsItemMapper.insertSelective(goodsItemBean);
+	}
+	
+}

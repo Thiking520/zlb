@@ -1,0 +1,53 @@
+package com.zhilianbao.erp.auth.mapper.archives;
+
+import java.util.List;
+import java.util.Map;
+
+import com.zhilianbao.erp.auth.entity.archives.DeliveryScopeBean;
+import com.zhilianbao.erp.auth.vo.archives.DeliveryScopeVo;
+
+import tk.mybatis.mapper.common.Mapper;
+/**
+ * 
+ * @author Tobin
+ *
+ */
+public interface DeliveryScopeMapper extends Mapper<DeliveryScopeBean> {
+	
+	/**
+	 * 通过站点分页查询站点范围列表
+	 * @Title:DeliveryScopeMapper
+	 * @author wangshengxia
+	 * @date 2017年4月6日上午11:02:34
+	 * @param map
+	 * @return
+	 */
+	public List<DeliveryScopeVo> queryDeliveryScopes(Map<String,Object> map);
+	/**
+	 * 通过站点范围ID查询站点详情
+	 * @Title:DeliveryScopeMapper
+	 * @author wangshengxia
+	 * @date 2017年4月6日上午11:03:17
+	 * @param bean
+	 * @return
+	 */
+	public DeliveryScopeVo queryDeliveryScopeDetails(DeliveryScopeBean bean); 
+	/**
+	 * 当PCAS为空时也参与查询
+	 * @Title:DeliveryScopeMapper
+	 * @author wangshengxia
+	 * @date 2017年3月31日上午9:24:28
+	 * @param bean
+	 * @return
+	 */
+	public int queryDeliveryRecordByPCAS(DeliveryScopeBean bean);
+	/**
+	 * 当PCAS为空时不参与查询
+	 * @Title:DeliveryScopeMapper
+	 * @author wangshengxia
+	 * @date 2017年3月31日上午9:24:43
+	 * @param bean
+	 * @return
+	 */
+	public List<DeliveryScopeVo> queryDeliveryRecordByPCAS2(DeliveryScopeBean bean);
+}

@@ -1,0 +1,290 @@
+package com.zhilianbao.erp.auth.entity.user;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+
+@Table(name = "t_role")
+public class RoleBean extends BaseBean implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5732189657276286655L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * 对外展示的唯一Key值
+     */
+    @Column(name = "uniqueKey")
+    private String uniquekey;
+
+    /**
+     * 运营商ID
+     */
+    @Column(name = "operator_id")
+    private Long operatorId;
+
+    /**
+     * 角色名称
+     */
+    @Column(name = "role_name")
+    private String roleName;
+
+    /**
+     * 角色图标
+     */
+    @Column(name = "role_icon")
+    private String roleIcon;
+
+    /**
+     * 角色描述
+     */
+    @Column(name = "role_description")
+    private String roleDescription;
+
+    /**
+     * 启用/禁用状态，true启用，false禁用
+     */
+    private Boolean enabled;
+
+    /**
+     * 本条记录创建者ID
+     */
+    private Long creator;
+
+    /**
+     * 本条记录修改者ID
+     */
+    private Long modifier;
+
+    /**
+     * 本纪录创建时间
+     */
+    @Column(name = "create_time")
+    private Date createTime;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    /**
+     * 是否删除，为true表示已删除
+     */
+    private Boolean deleted;
+
+    /**
+     * @return id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取对外展示的唯一Key值
+     *
+     * @return uniqueKey - 对外展示的唯一Key值
+     */
+    public String getUniquekey() {
+        return uniquekey;
+    }
+
+    /**
+     * 设置对外展示的唯一Key值
+     *
+     * @param uniquekey 对外展示的唯一Key值
+     */
+    public void setUniquekey(String uniquekey) {
+        this.uniquekey = uniquekey;
+    }
+
+    /**
+     * 获取运营商ID
+     *
+     * @return operator_id - 运营商ID
+     */
+    public Long getOperatorId() {
+        return operatorId;
+    }
+
+    /**
+     * 设置运营商ID
+     *
+     * @param operatorId 运营商ID
+     */
+    public void setOperatorId(Long operatorId) {
+        this.operatorId = operatorId;
+    }
+
+    /**
+     * 获取角色名称
+     *
+     * @return role_name - 角色名称
+     */
+    public String getRoleName() {
+        return roleName;
+    }
+
+    /**
+     * 设置角色名称
+     *
+     * @param roleName 角色名称
+     */
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    /**
+     * 获取角色图标
+     *
+     * @return role_icon - 角色图标
+     */
+    public String getRoleIcon() {
+        return roleIcon;
+    }
+
+    /**
+     * 设置角色图标
+     *
+     * @param roleIcon 角色图标
+     */
+    public void setRoleIcon(String roleIcon) {
+        this.roleIcon = roleIcon;
+    }
+
+    /**
+     * 获取角色描述
+     *
+     * @return role_description - 角色描述
+     */
+    public String getRoleDescription() {
+        return roleDescription;
+    }
+
+    /**
+     * 设置角色描述
+     *
+     * @param roleDescription 角色描述
+     */
+    public void setRoleDescription(String roleDescription) {
+        this.roleDescription = roleDescription;
+    }
+
+    /**
+     * 获取启用/禁用状态，true启用，false禁用
+     *
+     * @return enabled - 启用/禁用状态，true启用，false禁用
+     */
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    /**
+     * 设置启用/禁用状态，true启用，false禁用
+     *
+     * @param enabled 启用/禁用状态，true启用，false禁用
+     */
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * 获取本条记录创建者ID
+     *
+     * @return creator - 本条记录创建者ID
+     */
+    public Long getCreator() {
+        return creator;
+    }
+
+    /**
+     * 设置本条记录创建者ID
+     *
+     * @param creator 本条记录创建者ID
+     */
+    public void setCreator(Long creator) {
+        this.creator = creator;
+    }
+
+    /**
+     * 获取本条记录修改者ID
+     *
+     * @return modifier - 本条记录修改者ID
+     */
+    public Long getModifier() {
+        return modifier;
+    }
+
+    /**
+     * 设置本条记录修改者ID
+     *
+     * @param modifier 本条记录修改者ID
+     */
+    public void setModifier(Long modifier) {
+        this.modifier = modifier;
+    }
+
+    /**
+     * 获取本纪录创建时间
+     *
+     * @return create_time - 本纪录创建时间
+     */
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置本纪录创建时间
+     *
+     * @param createTime 本纪录创建时间
+     */
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    /**
+     * 获取是否删除，为true表示已删除
+     *
+     * @return deleted - 是否删除，为true表示已删除
+     */
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    /**
+     * 设置是否删除，为true表示已删除
+     *
+     * @param deleted 是否删除，为true表示已删除
+     */
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+}

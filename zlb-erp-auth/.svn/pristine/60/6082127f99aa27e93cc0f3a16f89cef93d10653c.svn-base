@@ -1,0 +1,209 @@
+package com.zhilianbao.erp.auth.impl.cars;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.cars.CarsBean;
+import com.zhilianbao.erp.auth.entity.user.OperatorCompanyBean;
+import com.zhilianbao.erp.auth.mapper.cars.CarsMapper;
+import com.zhilianbao.erp.auth.service.cars.ICarsService;
+import com.zhilianbao.erp.auth.service.parameter.ISystemDictService;
+import com.zhilianbao.erp.auth.vo.cars.CarsSearchVo;
+import com.zhilianbao.erp.auth.vo.cars.CarsVo;
+import com.zhilianbao.erp.auth.vo.parameter.rpc.DictVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
+
+@Service
+public class CarsServiceImpl implements ICarsService{
+
+	private static Logger logger=LogManager.getLogger(CarsServiceImpl.class);
+	
+    @Autowired
+    private CarsMapper carsMapper;
+	@Autowired
+	private ISystemDictService systemDictService;
+    
+	@Override
+	public ResponseResult<Page<CarsVo>> queryCarByPage(CarsSearchVo vo) {
+		ResponseResult<Page<CarsVo>> respResult = new ResponseResult<Page<CarsVo>>();
+		Page<CarsVo> page = new Page<CarsVo>();
+		respResult.setData(page);
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("vo", vo);
+			List<CarsVo> list = carsMapper.findByPage(map);
+			PageInfo<CarsVo> pageInfo = new PageInfo<CarsVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<CarsVo> carsList = pageInfo.getList();// 推荐使用这个获取结果集
+
+			page.setTotal(total);
+			page.setRows(carsList);
+			return respResult.success(page);
+		} catch (Exception e) {
+			logger.error("通过条件查询车辆列表出错!id={}", vo, e);
+			return respResult.err();
+		}
+	}
+	
+	
+	
+	@Override
+	public ResponseResult<CarsVo> queryCarDetails(CarsVo key) {
+		ResponseResult<CarsVo> respResult=new ResponseResult<CarsVo>();
+		try{
+			CarsBean cv=new CarsBean();
+			cv.setId(key.getId());
+			CarsVo cb=carsMapper.queryCarDetail(cv);
+			respResult.setData(cb);
+		}catch(Exception e){
+			logger.error("通过ID查询车辆详情出错!id={}",key.getId(), e);
+			return new ResponseResult<CarsVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<CarsVo> addCar(CarsVo vo) {
+		logger.info("欢迎进入======》addCar");
+		ResponseResult<CarsVo> respResult=new ResponseResult<CarsVo>();
+		CarsBean cBean=new CarsBean();
+		try{
+			PropertyUtils.copyProperties(cBean, vo);
+			cBean.setId(null);
+			carsMapper.insertSelective(cBean);
+			String newKey="VE";
+			String strId = String.valueOf(cBean.getId());
+	        String add0="";
+			for (int i = 0; i < 5-strId.length(); i++) {
+				add0+="0";
+			}
+			newKey=newKey+add0+strId;
+			CarsBean cBean2=new CarsBean();
+			cBean2.setId(cBean.getId());
+			cBean2.setCarId(newKey);
+			carsMapper.updateByPrimaryKeySelective(cBean2);
+		}catch(Exception e){
+			logger.error("添加车辆数据出错!",cBean, e);
+			return new ResponseResult<CarsVo>(ResultEnum.SYS_ERR);
+		}
+		
+		
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<CarsVo> deleteCar(CarsVo vo) {
+		ResponseResult<CarsVo> respResult=new ResponseResult<CarsVo>();
+		try{
+			CarsBean cb=new CarsBean();
+			cb.setId(vo.getId());
+			cb.setDeleted(true);
+			cb.setUpdateTime(new Date());
+			carsMapper.updateByPrimaryKeySelective(cb);
+		}catch(Exception e){
+			logger.error("通过ID删除车辆数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<CarsVo>(ResultEnum.SYS_ERR);
+		}
+		
+		
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<CarsVo> updateCar(CarsVo vo) {
+		ResponseResult<CarsVo> respResult=new ResponseResult<CarsVo>();
+		try{
+			CarsBean cb=new CarsBean();
+			PropertyUtils.copyProperties(cb, vo);
+			cb.setUpdateTime(new Date());
+			carsMapper.updateByPrimaryKeySelective(cb);
+		}catch(Exception e){
+			logger.error("通过ID更新车辆数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<CarsVo>(ResultEnum.SYS_ERR);
+		}
+		
+		return respResult;
+	}
+
+
+
+	@Override
+	public ResponseResult<CarsVo> updateCarState(CarsVo vo) {
+		ResponseResult<CarsVo> respResult=new ResponseResult<CarsVo>();
+		try{
+			CarsBean cb=new CarsBean();
+			Iterable<String> ids=vo.getIds();
+			Example example=new Example(CarsBean.class);
+		    Criteria criteria = example.createCriteria();
+		    criteria.andIn("id", ids);
+			
+			cb.setModifier(vo.getModifier());
+			cb.setEnabled(vo.getEnabled());
+			cb.setUpdateTime(new Date());
+			carsMapper.updateByExampleSelective(cb,example);
+		}catch(Exception e){
+			logger.error("通过ID更新车辆数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<CarsVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+
+
+	@Override
+	public ResponseResult<CarsVo> queryCarDetailsByCarId(CarsVo key) {
+		ResponseResult<CarsVo> respResult=new ResponseResult<CarsVo>();
+		try{
+			CarsBean cv=new CarsBean();
+			cv.setCarId(key.getCarId());
+			cv.setOperatorId(key.getOperatorId());
+			CarsVo cb=carsMapper.queryCarDetailsByCarId(cv);
+			respResult.setData(cb);
+		}catch(Exception e){
+			logger.error("通过ID查询车辆详情出错!id={}",key.getId(), e);
+			return new ResponseResult<CarsVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+
+
+	@Override
+	public ResponseResult<Map<String, Object>> initDropDownBox(Long operatorId) {
+		ResponseResult<Map<String,Object>> respResult=new ResponseResult<Map<String,Object>>();
+		try{
+			List<DictVo> carTypeList=systemDictService.getDictList(operatorId, Constants.AUTH_CAR_TYPE).getData();
+			List<DictVo> regionList=systemDictService.getDictList(operatorId, Constants.AUTH_REGION).getData();
+			List<DictVo> selfSupportList=systemDictService.getDictList(operatorId, Constants.AUTH_SELF_SUPPORT).getData();
+			List<DictVo> commonActiveList=systemDictService.getDictList(operatorId, Constants.TYPE_COMMON_ACTIVE).getData();
+			Map<String,Object> map=new HashMap<String,Object>();
+			map.put("carTypeList", carTypeList);
+			map.put("regionList", regionList);
+			map.put("selfSupportList", selfSupportList);
+			map.put("commonActiveList", commonActiveList);
+			respResult.setData(map);
+		}catch(Exception e){
+			logger.error("此运营商查询列表出错!id={}",operatorId, e);
+			return new ResponseResult<Map<String,Object>>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+}

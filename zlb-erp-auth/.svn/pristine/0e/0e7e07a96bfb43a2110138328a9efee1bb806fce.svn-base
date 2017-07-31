@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.pda.PdaAppInfoMapper" >
+  	
+  	<select id="getAppVersionInfo" resultType="com.zhilianbao.erp.auth.vo.pda.PdaAppInfoVo">
+  		select id as id,package_name as packageName,version as version,app_length as appLength,package_url as packageUrl,is_must_update as isMustUpdate,
+  		is_most_new as isMostNew,update_des as updateDes from t_app_baseinfo t WHERE t.version=(SELECT MAX(ti.VERSION) FROM t_app_baseinfo ti)
+  	</select>
+ 
+</mapper>

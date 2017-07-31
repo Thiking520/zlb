@@ -1,0 +1,131 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsPriceBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsPriceMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsSkuListMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsPriceService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPriceVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsSkuListVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsSkuRecodeVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsVo;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+/**
+ * 商品价格
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月14日 下午2:13:22
+ */
+@Service
+@Transactional
+public class GoodsPriceServiceImpl implements IGoodsPriceService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsPriceServiceImpl.class);
+	
+	@Autowired
+	private GoodsPriceMapper goodsPriceMapper;
+	@Autowired
+	private GoodsMapper goodsMapper;
+	@Autowired
+	private GoodsSkuListMapper goodsSkuListMapper;
+	
+	public ResponseResult<List<GoodsPriceVo>> getPriceByGoodsId(GoodsPriceVo searchVo) {
+		ResponseResult<List<GoodsPriceVo>> rspResult = new ResponseResult<List<GoodsPriceVo>>();
+		try {
+			// 根据goodsId获取价格集合
+			List<GoodsPriceVo> goodsPriceVoList = goodsPriceMapper.getPriceByGoodId(searchVo);
+						
+			// 根据goodsId获取规格
+			GoodsVo goodsVo = new GoodsVo();
+			goodsVo.setId(searchVo.getGoodsId());
+			goodsVo = goodsMapper.queryById(goodsVo);
+			// 多规格商品
+			if(goodsVo.getGoodsMode() == 1){
+				// 根据goodsId获取规格集合
+				GoodsSkuListVo vo = new GoodsSkuListVo();
+				vo.setGoodsId(searchVo.getGoodsId());
+				List<GoodsSkuListVo> goodsSkuVoList = goodsSkuListMapper.querySkuDetailsByGoodsId(vo);
+				if(goodsSkuVoList != null && goodsSkuVoList.size() > 0){
+					// 循环规格
+					for(GoodsSkuListVo skuTmpVo : goodsSkuVoList){
+						// 获取规格名称
+						String skuNames = "";
+						List<GoodsSkuRecodeVo> skuRecodeList = skuTmpVo.getSkuList();
+						for(GoodsSkuRecodeVo skuRecodeTmpVo: skuRecodeList){
+							skuNames = skuNames + skuRecodeTmpVo.getSkuName() + "-";
+						}
+						skuNames = skuNames.substring(0, skuNames.length()-1);
+						// 该规格是否存在价格信息，默认不存在
+						boolean hasPrice = false;
+						if(goodsPriceVoList != null && goodsPriceVoList.size() > 0){
+							// 循环价格
+							for(GoodsPriceVo priceTmpVo : goodsPriceVoList){
+								// 如果相同
+								if(priceTmpVo.getGoodsSkuId() == skuTmpVo.getId()){
+									priceTmpVo.setSkuNames(skuNames);
+									hasPrice = true;
+								}
+							}
+						}
+						if(!hasPrice){
+							GoodsPriceVo priceTmpVo = new GoodsPriceVo();
+							priceTmpVo.setSkuNames(skuNames);
+							priceTmpVo.setGoodsSkuId(skuTmpVo.getId());
+							goodsPriceVoList.add(priceTmpVo);
+						}
+					}
+				}
+			}
+			return rspResult.success(goodsPriceVoList);
+		} catch (Exception e) {
+			logger.error("【商品资料管理-价格信息】根据商品id查价格信息出错{}",searchVo,e);
+			return rspResult.err(); 
+		}
+	}
+
+	@Override
+	public ResponseResult<GoodsPriceVo> updateData(List<GoodsPriceVo> voList) {
+		ResponseResult<GoodsPriceVo> rspResult = new ResponseResult<GoodsPriceVo>();
+		try {
+			for(GoodsPriceVo vo : voList){
+				GoodsPriceBean bean = new GoodsPriceBean();
+				PropertyUtils.copyProperties(bean,vo);
+				//根据goodsId和goodsSkuId查一遍，存在则update，不存在则insert
+				List<GoodsPriceVo> oldVoList = goodsPriceMapper.getPriceByGoodId(vo);
+				if(oldVoList != null && oldVoList.size() > 0){
+					bean.setId(oldVoList.get(0).getId());
+					//不能用updateByPrimaryKeySelective会忽略更新属性为null的值
+					goodsPriceMapper.updateData(bean);
+				}
+				else
+					goodsPriceMapper.insertSelective(bean);
+			}
+		} catch (Exception e) {
+			logger.error("【商品资料管理-价格信息】修改出错{}",voList, e);
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<List<GoodsPriceVo>> queryAll() {
+		ResponseResult<List<GoodsPriceVo>> rspResult = new ResponseResult<List<GoodsPriceVo>>();
+		try {
+			List<GoodsPriceVo> goodsPriceVoList = goodsPriceMapper.queryAll();
+			return rspResult.success(goodsPriceVoList);
+		} catch (Exception e) {
+			logger.error("【电商平台调用】根据运营商查询所有价格信息出错{}",e);
+			return rspResult.err(); 
+		}
+	}
+}

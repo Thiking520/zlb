@@ -1,0 +1,150 @@
+package com.zhilianbao.erp.auth.impl.user;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.entity.user.RoleMenuListBean;
+import com.zhilianbao.erp.auth.mapper.user.MenuMapper;
+import com.zhilianbao.erp.auth.mapper.user.RoleMenuListMapper;
+import com.zhilianbao.erp.auth.service.user.IRoleMenuListService;
+import com.zhilianbao.erp.auth.vo.user.MenuVo;
+import com.zhilianbao.erp.auth.vo.user.RoleMenuListVo;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+@Service
+public class RoleMenuListServiceImpl implements IRoleMenuListService{
+
+	private static Logger logger=LogManager.getLogger(RoleMenuListServiceImpl.class);
+	
+	@Autowired
+	private RoleMenuListMapper roleMenuListMapper;
+	
+	@Autowired
+	private MenuMapper menuMapper;
+	
+	/*@Autowired
+	private IMenuService menuService;*/
+	
+	
+	@Override
+	public ResponseResult<MenuVo> getAuthByRole(RoleMenuListVo vo) {
+		ResponseResult<MenuVo> response = new ResponseResult<MenuVo>();
+		try {
+			//所有菜单
+			List<MenuVo> menuListVo = menuMapper.findAll();
+			//角色拥有的权限
+			List<RoleMenuListVo> roleAuthListVo = roleMenuListMapper.findAuthByRoleId(vo);
+			
+			List<MenuVo> mListVo = new ArrayList<MenuVo>();
+			//判断是否拥有该权限
+			if(menuListVo != null && roleAuthListVo != null) {
+				for(MenuVo menu : menuListVo) {
+					Long isOwn = 0L;
+					for(RoleMenuListVo roleMenu:roleAuthListVo) {
+						if(menu.getId() == roleMenu.getMenuId()) {
+							isOwn = 1L;
+						}
+					}
+					menu.setIsOwn(isOwn);
+					mListVo.add(menu);
+				}
+			}
+			response.setRows(mListVo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return new ResponseResult<MenuVo>(ResultEnum.SYS_ERR);
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<MenuVo> modifyAuth(RoleMenuListVo vo) {
+		ResponseResult<MenuVo> response = new ResponseResult<MenuVo>();
+		RoleMenuListVo listVo = new RoleMenuListVo();
+		//旧的menuId
+		List<Long> oldIds = new ArrayList<Long>();
+		try {
+			String[] ids = null;
+			//新的menuId
+			List<Long> menuIds = new ArrayList<Long>();
+			
+			if(vo.getIds() != null) {
+				//前端传入以","分隔的菜单id数组
+				ids = vo.getIds().split(",");
+			}
+			if(ids !=null && ids.length > 0) {
+				for(int i=0;i<ids.length;i++) {
+					//拿到传入的菜单id
+					menuIds.add(Long.parseLong(ids[i]));
+					
+				}
+			} else {
+				logger.error("未选择权限");
+				return response;
+			}
+			//角色拥有的权限
+			List<RoleMenuListVo> roleAuthListVo =  roleMenuListMapper.findAuthByRoleId(vo);
+			if(roleAuthListVo != null) {
+				for (RoleMenuListVo roleMenuListVo : roleAuthListVo) {
+					oldIds.add(roleMenuListVo.getMenuId());
+				}
+			}
+			//第一次批量更新，把所有权限变成没有
+			/*listVo.setMenuIds(oldIds);
+			roleMenuListMapper.updateBatch(listVo);*/
+			for (Long oldmenuId : oldIds) {
+				RoleMenuListVo lvo = new RoleMenuListVo();
+				lvo.setRoleId(vo.getRoleId());
+				lvo.setMenuId(oldmenuId);
+				lvo.setUpdateTime(new Date());
+				roleMenuListMapper.updateStatusFalse(lvo);
+			}
+			
+			//第二次，将页面传过来的ID进行新增或者修改操作
+			for(int i = 0;i<menuIds.size();i++) {
+				RoleMenuListVo livo = new RoleMenuListVo();
+				livo.setMenuId(menuIds.get(i));
+				livo.setRoleId(vo.getRoleId());
+				//查找该角色是否已经拥有这条数据
+				RoleMenuListVo roleAuthVo = roleMenuListMapper.findAuthByRoleAndMenu(livo);
+				if(roleAuthVo == null) {
+					//如果没有，新增数据
+					RoleMenuListBean listBean = new RoleMenuListBean();
+					listBean.setCreateTime(new Date());
+					listBean.setCreator(1L);
+					listBean.setDeleted(false);
+					listBean.setEnabled(true);
+					listBean.setMenuId(menuIds.get(i));
+					listBean.setModifier(1L);
+					listBean.setRoleId(vo.getRoleId());
+					listBean.setUpdateTime(new Date());
+					roleMenuListMapper.insertSelective(listBean);
+					
+				} else {
+					//修改数据
+					roleAuthVo.setEnabled(true);
+					roleAuthVo.setDeleted(false);
+					/*SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					roleAuthVo.setUpdateTime(Timestamp.valueOf(sdf.format(new Date())));*/
+					roleAuthVo.setModifier("1");
+					roleMenuListMapper.updateStatusTrueById(roleAuthVo);
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return new ResponseResult<MenuVo>(ResultEnum.SYS_ERR);
+		}
+		return response;
+	}
+
+}

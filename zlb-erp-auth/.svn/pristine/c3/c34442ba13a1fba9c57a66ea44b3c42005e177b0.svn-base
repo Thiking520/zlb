@@ -1,0 +1,55 @@
+package com.zhilianbao.erp.auth.entity.archives;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Table;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+
+@Table(name = "t_delivery_scope_points")
+public class DeliveryScopePointBean extends BaseBean implements Serializable{
+    
+	private static final long serialVersionUID = 1L;
+	/**
+	 * 引用t_delivery_scope表主键
+	 */
+	@Column(name = "delivery_scope_id")
+	private Integer deliveryScopeId;
+	/**
+     * 经度
+     */
+    private BigDecimal longitude;
+    
+	/**
+     * 纬度
+     */
+    private BigDecimal latitude;
+    
+    public Integer getDeliveryScopeId() {
+		return deliveryScopeId;
+	}
+
+	public void setDeliveryScopeId(Integer deliveryScopeId) {
+		this.deliveryScopeId = deliveryScopeId;
+	}
+
+	public BigDecimal getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(BigDecimal longitude) {
+		this.longitude = longitude;
+	}
+
+	public BigDecimal getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(BigDecimal latitude) {
+		this.latitude = latitude;
+	}
+    
+    
+}

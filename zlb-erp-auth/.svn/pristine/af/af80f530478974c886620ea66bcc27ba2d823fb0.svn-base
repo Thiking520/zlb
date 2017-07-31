@@ -1,0 +1,365 @@
+package com.zhilianbao.erp.auth.impl.parameter;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.parameter.SystemDictBean;
+import com.zhilianbao.erp.auth.entity.parameter.SystemParamBean;
+import com.zhilianbao.erp.auth.mapper.parameter.SystemDictMapper;
+import com.zhilianbao.erp.auth.mapper.parameter.SystemParamMapper;
+import com.zhilianbao.erp.auth.service.parameter.ISystemDictService;
+import com.zhilianbao.erp.auth.vo.parameter.SystemDictVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.entity.system.DictBean;
+import com.zhilianbao.erp.common.entity.system.ParamBean;
+import com.zhilianbao.erp.common.util.cache.DictCacheUtil;
+import com.zhilianbao.erp.common.util.cache.ParamCacheUtil;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
+
+/**
+ * 
+ * @company zhilianbao
+ * @author kuangzengye
+ * @date   2017年3月11日下午3:43:15
+ * @description:数据字典业务实现类
+ */
+@Service
+public class SystemDictServiceImpl implements ISystemDictService {
+	
+	private static final Logger logger=LogManager.getLogger(SystemDictServiceImpl.class);
+	
+	private static List<SystemDictBean> systemDictBeanList=new ArrayList<SystemDictBean>();
+	private static List<SystemParamBean> systemParaBeanList=new ArrayList<SystemParamBean>();
+	
+	@Autowired
+	private SystemDictMapper systemDictMapper;
+	@Autowired
+	private SystemParamMapper systemParamMapper;
+	
+	@Override
+	public ResponseResult<SystemDictVo> getSystemDictById(Long id) {
+		ResponseResult<SystemDictVo> rspResult = new ResponseResult<SystemDictVo>();
+		try {
+			SystemDictVo vo = new SystemDictVo();
+			if(id == null){
+				rspResult = new ResponseResult<SystemDictVo>(ResultEnum.EMPTY);
+				vo.setModifiable(0);
+//				Long operatorId = 1L;//运营商ID,根据从页面传入 TODO 考虑从公用方法中调用获取
+//				vo.setModifiable(DictCacheUtil.getInt(operatorId, Constants.KEY_COMMON_MODIFIABLE_NO));
+				rspResult.setData(vo);
+				return rspResult;
+			}
+			SystemDictBean bean = systemDictMapper.selectByPrimaryKey(id);
+			PropertyUtils.copyProperties(vo, bean);
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("通过Id查询系统数据字典数据出错！{}",id,e);
+			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;		
+	}
+	
+	@Override
+	public ResponseResult<SystemDictVo> getPageByVo(ViewSearchVo vo) {
+		ResponseResult<SystemDictVo> rspResult = new ResponseResult<SystemDictVo>();
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			List<SystemDictVo> list = systemDictMapper.getPageByVo(vo);
+			
+			if (Constants.ZERO == list.size()) {
+				return new ResponseResult<SystemDictVo>(ResultEnum.EMPTY);
+			}
+			PageInfo<SystemDictVo> page = new PageInfo<SystemDictVo>(list);
+			long total = page.getTotal();// 获取数据库中的总条数
+			if (Constants.ZERO == total) {
+				return new ResponseResult<SystemDictVo>(ResultEnum.EMPTY);
+			}
+
+			rspResult.setTotal(total);
+			rspResult.setRows(list);
+		} catch (Exception e) {
+			logger.error("分页查询数据字典数据出错", e);
+			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<SystemDictVo> addOrModifySystemDict(SystemDictVo vo) {
+		try {
+			//参数非空校验
+			if(!StringUtils.isNoneBlank(vo.getDictTitle(),vo.getDictType(),vo.getDictValue(),
+			   String.valueOf(vo.getStatus()),vo.getDictDesc(),String.valueOf(vo.getDictOrder()),
+			   vo.getOperatorId() + "")){
+				return new ResponseResult<SystemDictVo>(ResultEnum.ILLEGAL_PARAM); 
+			}
+			
+			SystemDictBean bean = new SystemDictBean();
+			PropertyUtils.copyProperties(bean, vo);
+			
+			int count = 0;
+			if(bean.getId() == null){//添加
+				
+				//检验新增的值是否重复 数据字典通过类型key和value判断唯一
+				SystemDictBean queryBean = new SystemDictBean();
+				queryBean.setDictType(vo.getDictType());
+				queryBean.setDictValue(vo.getDictValue());
+				queryBean.setOperatorId(vo.getOperatorId());
+				SystemDictBean isRepeat = systemDictMapper.selectOne(queryBean);
+				if(isRepeat != null){
+					return new ResponseResult<SystemDictVo>(ResultEnum.DATA_REPEAT);
+				}
+				bean.setCreateTime(new Date());
+				bean.setCreator(vo.getUserId());
+				bean.setUpdateTime(bean.getCreateTime());
+				bean.setModifier(bean.getCreator());
+				count = systemDictMapper.insertSelective(bean);
+				
+			} else { //更新
+				bean.setUpdateTime(new Date());
+				bean.setModifier(vo.getUserId());
+				//通过运营商ID跟ID查询数据  检验运营商操作
+				SystemDictBean queryBean = new SystemDictBean();
+				queryBean.setId(vo.getId());
+				queryBean.setOperatorId(vo.getOperatorId());
+				SystemDictBean isLegal = systemDictMapper.selectOne(queryBean);
+				if(isLegal != null){
+					count = systemDictMapper.updateByPrimaryKeySelective(bean);
+				}else{
+					return new ResponseResult<SystemDictVo>(ResultEnum.ILLEGAL_ACCESS);
+				}
+			}
+			
+			if(count == 1){				
+				//更新缓存
+				DictBean dict = new DictBean();
+				PropertyUtils.copyProperties(dict, vo);
+				//如果是生效的 更新缓存 如果是失效 不再添加到缓存
+				//生效 添加到缓存
+				if(vo.getStatus() == 1){
+					DictCacheUtil.updateCacheData(dict);
+				//失效 从缓存删除
+				}else{
+					DictCacheUtil.remove(dict);
+				}
+				return new ResponseResult<SystemDictVo>();
+			}else{
+				return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+			}
+		} catch (Exception e) {
+			logger.error("", e);
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+		}
+	}
+	
+	@Override
+	@Deprecated
+	public ResponseResult<SystemDictVo> addSystemDict(SystemDictVo vo) {
+		ResponseResult<SystemDictVo> rspResult = new ResponseResult<SystemDictVo>();
+		try {
+			SystemDictBean record = new SystemDictBean();
+			PropertyUtils.copyProperties(record, vo);
+			record.setCreateTime(new Date());
+			record.setCreator(vo.getUserId());
+			record.setUpdateTime(record.getCreateTime());
+			record.setModifier(record.getCreator());
+			systemDictMapper.insertSelective(record);
+			//待优化 TODO
+			ParamInit.updateDictCacheData();
+		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			logger.error("新增数据字典数据出错,{}",vo, e);
+			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	@Deprecated
+	public ResponseResult<SystemDictVo> updateSystemDict(SystemDictVo vo) {
+		ResponseResult<SystemDictVo> rspResult = new ResponseResult<SystemDictVo>();
+		try {
+			SystemDictBean record = new SystemDictBean();
+			PropertyUtils.copyProperties(record, vo);
+			record.setUpdateTime(new Date());
+			record.setModifier(vo.getUserId());
+			systemDictMapper.updateByPrimaryKeySelective(record);
+			
+			//待优化 TODO
+			ParamInit.updateDictCacheData();
+		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			logger.error("更新数据字典数据出错，{}",vo, e);
+			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Transactional
+	@Override
+	public ResponseResult<SystemDictVo> effectSystemDict(SystemDictVo vo) {
+		ResponseResult<SystemDictVo> rspResult = new ResponseResult<SystemDictVo>();
+		try {
+			Integer status = vo.getStatus();
+			if(status == null){
+				return rspResult.setResponseResult(ResultEnum.ILLEGAL_PARAM);
+			}
+			SystemDictBean record = new SystemDictBean();
+			record.setId(vo.getId());
+			record.setStatus(vo.getStatus());
+			record.setUpdateTime(new Date());
+			record.setModifier(vo.getUserId());
+			
+			int count = 0;
+			//通过运营商ID跟ID查询数据  检验运营商操作
+			SystemDictBean queryBean = new SystemDictBean();
+			queryBean.setId(vo.getId());
+			queryBean.setOperatorId(vo.getOperatorId());
+			SystemDictBean isLegal = systemDictMapper.selectOne(queryBean);
+			if(isLegal != null){
+				count = systemDictMapper.updateByPrimaryKeySelective(record);
+			}else{
+				return new ResponseResult<SystemDictVo>(ResultEnum.ILLEGAL_ACCESS);
+			}
+			
+			if(count != 1){
+				return new ResponseResult<SystemDictVo>(ResultEnum.ILLEGAL_ACCESS);
+			}
+			//缓存操作
+//			record = systemDictMapper.selectByPrimaryKey(vo.getId());
+			record = isLegal;
+			DictBean dict = new DictBean();
+			PropertyUtils.copyProperties(dict, record);
+			//生效 添加到缓存
+			if(vo.getStatus() == 1){
+				DictCacheUtil.updateCacheData(dict);
+			//失效 从缓存删除
+			}else{
+				DictCacheUtil.remove(dict);
+			}
+		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			logger.error("更新数据字典数据出错，{}",vo, e);
+			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+	
+	@Override
+	public ResponseValue<String> addOperatorBaseDict(long operatorId,long creator,long modifier){
+		ResponseValue<String> responseValue=new ResponseValue<String>();
+		try{
+			//字典
+			if(systemDictBeanList == null || systemDictBeanList.size()<=0){
+				Example example=new Example(SystemDictBean.class);
+			    Criteria criteria = example.createCriteria();
+			    criteria.andEqualTo("operatorId", 0);
+				
+			    systemDictBeanList=systemDictMapper.selectByExample(example);
+			}
+			
+			if(systemDictBeanList == null || systemDictBeanList.size()<=0){
+				return responseValue.failure("没有字典基础数据配置");
+			}
+			//参数
+			if(systemParaBeanList == null || systemParaBeanList.size()<=0){
+				Example example=new Example(SystemParamBean.class);
+			    Criteria criteria = example.createCriteria();
+			    criteria.andEqualTo("operatorId", 0);
+				
+			    systemParaBeanList=systemParamMapper.selectByExample(example);
+			}
+			
+			if(systemParaBeanList == null || systemParaBeanList.size()<=0){
+				return responseValue.failure("没有参数基础数据配置");
+			}
+			
+			//字典
+			DictBean dictBean=null;
+			List<DictBean> dictBeanList = new ArrayList<DictBean>();
+			for(SystemDictBean systemDictBean:systemDictBeanList){
+				systemDictBean.setOperatorId(operatorId);
+				systemDictBean.setCreator(creator);
+				systemDictBean.setModifier(modifier);
+				
+				dictBean=new DictBean();
+				PropertyUtils.copyProperties(dictBean, systemDictBean);
+				dictBeanList.add(dictBean);
+			}
+			//参数
+			ParamBean paramBean=null;
+			List<ParamBean> paramBeanList = new ArrayList<ParamBean>();
+			for(SystemParamBean systemParamBean:systemParaBeanList){
+				systemParamBean.setOperatorId(operatorId);
+				systemParamBean.setCreator(creator);
+				systemParamBean.setModifier(modifier);
+				
+				paramBean=new ParamBean();
+				PropertyUtils.copyProperties(paramBean, systemParamBean);
+				paramBeanList.add(paramBean);
+			}
+			
+			int num=systemDictMapper.insertBatchOperatorDict(systemDictBeanList);
+			if(num != systemDictBeanList.size()){
+				return responseValue.failureRollback("初始运营商基础数据失败");
+	        } 
+			
+			int paraNum=systemParamMapper.insertBatchOperatorPara(systemParaBeanList);
+			if(paraNum != systemParaBeanList.size()){
+				return responseValue.failureRollback("初始运营商参数基础数据失败");
+			}
+			
+			
+			DictCacheUtil.updateCacheData(dictBeanList);
+			ParamCacheUtil.updateCacheData(paramBeanList);
+		}catch (Exception e) {
+			logger.error("SystemDictServiceImpl,addOperatorBaseDict", e);
+			return responseValue.errRollback();
+		}
+		
+	    return responseValue.success();
+	}
+	
+//	@Override
+//	public ResponseResult<SystemDictVo> modifyDelSystemDictById(String type, Long id) {
+//		try {
+//			int count = systemDictMapper.deleteByPrimaryKeyAndType(type, id);
+//			if(count == 0){
+//				return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+//			}else {
+//				DictCacheUtil.remove(DictCacheUtil.getDictOfIdByType(type, id));
+//				return new ResponseResult<SystemDictVo>(ResultEnum.SUCCESSE);
+//			}
+//		} catch (Exception e) {
+//			logger.error("", e);
+//			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//			return new ResponseResult<SystemDictVo>(ResultEnum.SYS_ERR);
+//		}
+//	}
+	
+	
+//	@Override
+//	public ResponseResult<List<Map<String,Object>>> getAllTypeMapList() {
+//		return new ResponseResult<List<Map<String,Object>>>(systemDictMapper.getAllTypeMapList());
+//	}
+		
+}

@@ -1,0 +1,27 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsMaterialBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialPageVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 商品素材
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:33:47
+ */
+public interface GoodsMaterialMapper extends BaseMapper<GoodsMaterialBean> {
+	
+	/**
+	 * 分页查询
+	 * @param vo
+	 * @return ：List<GoodsMaterialVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午6:55:53
+	 */
+	List<GoodsMaterialVo> queryListByPage(GoodsMaterialPageVo vo);
+
+}

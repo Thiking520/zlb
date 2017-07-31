@@ -1,0 +1,252 @@
+package com.zhilianbao.erp.auth.impl.user;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.user.RoleBean;
+import com.zhilianbao.erp.auth.mapper.user.RoleMapper;
+import com.zhilianbao.erp.auth.service.user.IRoleService;
+import com.zhilianbao.erp.auth.vo.user.RolePageVo;
+import com.zhilianbao.erp.auth.vo.user.RoleVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
+
+
+@Service
+public class RoleServiceImpl implements IRoleService{
+
+	private static Logger logger=LogManager.getLogger(RoleServiceImpl.class);
+	
+	@Autowired
+	private RoleMapper roleMapper;
+	
+	/**
+	 * 添加一个角色
+	 */
+	@Override
+	public ResponseResult<RoleVo> addRole(RoleVo vo) {
+		ResponseResult<RoleVo> response = new ResponseResult<RoleVo>();
+		try {
+			//判断角色名称是否已经重复
+			vo.setRoleName(vo.getRoleName().trim());
+			List<RoleVo> roleVoList = roleMapper.findByRoleName(vo);
+			if(roleVoList != null && roleVoList.size() > 0) {
+				return response.failure(ResultEnum.ROLE_NAME_EXIST);
+			}
+			
+			RoleBean role =new RoleBean();
+			PropertyUtils.copyProperties(role, vo);//将vo中的属性复制给role对象
+			role.setId(null);
+			role.setCreateTime(new Date());
+			role.setEnabled(vo.getEnabled());
+			role.setUniquekey(new Date().getTime() + "");
+			roleMapper.insertSelective(role);
+			StringBuffer sb = new StringBuffer();
+			long id = role.getId();
+			if((id+"").length() < 6) {
+				for(int i=0;i<6-(id+"").length();i++) {
+					sb.append("0");
+				}
+			}
+			role.setUniquekey("RO"+sb.toString()+id);
+			role.setUpdateTime(null);
+			roleMapper.updateByPrimaryKeySelective(role);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.failure(ResultEnum.SYS_ERR);
+		}
+		return response;
+	}
+
+	/**
+	 * 分页查找所有角色
+	 * 
+	 */
+	@Override
+	public ResponseResult<Page<RoleVo>> findAllRoles(RolePageVo vo) {
+		
+		ResponseResult<Page<RoleVo>> response = new ResponseResult<Page<RoleVo>>();
+		Page<RoleVo> page = new Page<RoleVo>();
+		response.setData(page);
+		try {
+			// 与mysql中的limit参数一致offset,limit
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize()); // 核心分页代码 开启分页查询，后面第一条查询语句会被分页
+			// 注意:如果有两条查询语句，第二条不会被分页
+			List<RoleVo> list = roleMapper.queryRolesListByPage(vo);
+			if (Constants.ZERO == list.size()) {
+				return response.failure(ResultEnum.EMPTY);
+			}
+			SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+			for (RoleVo roleVo : list) {
+				if(roleVo.getCreateTime() != null) {
+					roleVo.setCreateTimeStr(sdf.format(roleVo.getCreateTime()));
+				}
+				if(roleVo.getUpdateTime() != null) {
+					roleVo.setUpdateTimeStr(sdf.format(roleVo.getUpdateTime()));
+				}
+			}
+			
+			PageInfo<RoleVo> pageInfo = new PageInfo<RoleVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<RoleVo> roleList = pageInfo.getList();
+			if (CollectionUtils.isEmpty(roleList)) {
+				return response.failure(ResultEnum.EMPTY);
+			}
+			//分页必填的两个参数
+			page.setTotal(total);
+			page.setRows(roleList);
+			return response.success(page);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("查询角色列表数据出错！{}",vo,e);
+			return response.err();
+		}
+	}
+
+	@Override
+	public ResponseResult<RoleVo> deleteRoleById(RoleVo vo) {
+		ResponseResult<RoleVo> response = new ResponseResult<RoleVo>();
+		try {
+			RoleBean role = new RoleBean();
+			role.setId(vo.getId());
+			role.setDeleted(true);
+			role.setUpdateTime(new Date());
+			roleMapper.updateByPrimaryKeySelective(role);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.err();
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<RoleVo> modifyStatusById(RoleVo vo) {
+		ResponseResult<RoleVo> response = new ResponseResult<RoleVo>();
+		try {
+			RoleBean role = new RoleBean();
+			Iterable<String> ids=vo.getIds();
+			Example example=new Example(RoleBean.class);
+		    Criteria criteria = example.createCriteria();
+		    criteria.andIn("id", ids);
+			
+		    role.setEnabled(vo.getEnabled());
+			role.setUpdateTime(new Date());
+			role.setModifier(vo.getModifier());
+			roleMapper.updateByExampleSelective(role,example);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.err();
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<RoleVo> findRoleById(RoleVo vo) {
+		ResponseResult<RoleVo> response = new ResponseResult<RoleVo>();
+		try {
+			RoleVo roleVo = roleMapper.findRoleById(vo);
+			if(roleVo == null) {
+				return response.failure(ResultEnum.EMPTY);
+			}
+			roleVo.setType(vo.getType());
+			response.setData(roleVo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.err();
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<RoleVo> modifyRoleById(RoleVo vo) {
+		ResponseResult<RoleVo> response = new ResponseResult<RoleVo>();
+		try {
+			//判断角色名称是否已经重复
+			vo.setRoleName(vo.getRoleName().trim());
+			List<RoleVo> roleVoList = roleMapper.findByRoleName(vo);
+			if(roleVoList != null && roleVoList.size() > 0) {
+				return response.failure(ResultEnum.ROLE_NAME_EXIST);
+			}
+			long operatorId = vo.getOperatorId();
+			vo.setOperatorId(null);
+			RoleVo roleVo = roleMapper.findRoleById(vo);
+			if(roleVo == null) {
+				return response.failure(ResultEnum.EMPTY);
+			}
+			RoleBean role = new RoleBean();
+			PropertyUtils.copyProperties(role, roleVo);//将vo中的属性复制给role对象
+			role.setUpdateTime(new Date());
+			role.setEnabled(vo.getEnabled());
+			role.setRoleDescription(vo.getRoleDescription());
+			role.setRoleName(vo.getRoleName());
+			role.setOperatorId(operatorId);
+			role.setModifier(vo.getModifier());
+			role.setIssuperadmin(vo.getIssuperadmin());
+			roleMapper.updateByPrimaryKeySelective(role);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.err();
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseResult<List<RoleVo>> getAllRoles(RolePageVo vo) {
+		ResponseResult<List<RoleVo>> response = new ResponseResult<List<RoleVo>>();
+		try {
+			List<RoleVo> roleList = roleMapper.findAll(vo);
+			if(roleList == null) {
+				return response.failure(ResultEnum.EMPTY);
+			} 
+			return response.success(roleList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.err();
+		}
+	}
+
+	@Override
+	public List<RoleVo> findRoleByUserId(RoleVo rvo) {
+		
+		return roleMapper.findRoleByUserId(rvo);
+	}
+
+}
+
+/**
+ * 
+ * 
+ * ResponseResult<RoleVo> response = new ResponseResult<RoleVo>();
+		try {
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return response.err();
+		}
+		return response;
+ * 
+ * 
+ */

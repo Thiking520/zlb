@@ -1,0 +1,217 @@
+package com.zhilianbao.erp.auth.impl.archives;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.archives.DeliveryRecordBean;
+import com.zhilianbao.erp.auth.mapper.archives.DeliveryRecordMapper;
+import com.zhilianbao.erp.auth.service.archives.IDeliveryRecordService;
+import com.zhilianbao.erp.auth.vo.archives.DeliveryRecordSearchVo;
+import com.zhilianbao.erp.auth.vo.archives.DeliveryRecordVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.entity.system.DictBean;
+import com.zhilianbao.erp.common.util.cache.DictCacheUtil;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+
+/**
+ * @author Tobin
+ * @version 创建时间：2017年3月2日 下午2:14:43 类说明
+ */
+@Service
+public class DeliveryRecordServiceImpl implements IDeliveryRecordService {
+	private static Logger logger = LogManager.getLogger(DeliveryRecordServiceImpl.class);
+
+	@Autowired
+	private DeliveryRecordMapper deliveryRecordMapper;
+
+	@Override
+	public ResponseResult<Page<DeliveryRecordVo>> queryDeliveryRecordListByPage(DeliveryRecordSearchVo vo) {
+		ResponseResult<Page<DeliveryRecordVo>> respResult = new ResponseResult<Page<DeliveryRecordVo>>();
+		Page<DeliveryRecordVo> page = new Page<DeliveryRecordVo>();
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("vo", vo);
+			List<DeliveryRecordVo> list = deliveryRecordMapper.queryDeliveryRecords(map);
+			PageInfo<DeliveryRecordVo> pageInfo = new PageInfo<DeliveryRecordVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<DeliveryRecordVo> drList = pageInfo.getList();// 推荐使用这个获取结果集
+			
+			page.setTotal(total);
+			page.setRows(drList);
+			return respResult.success(page);
+		} catch (Exception e) {
+			logger.error("通过条件查询站点列表出错!id={}", vo, e);
+			return respResult.err();
+		}
+	}
+
+	@Override
+	public ResponseResult<DeliveryRecordVo> queryDeliveryRecordDetails(DeliveryRecordVo key) {
+		ResponseResult<DeliveryRecordVo> respResult=new ResponseResult<DeliveryRecordVo>();
+		try{
+			DeliveryRecordBean dr=new DeliveryRecordBean();
+			dr.setId(key.getId());
+			DeliveryRecordVo drVo=deliveryRecordMapper.queryDeliveryRecordDetails(dr);
+			respResult.setData(drVo);
+		}catch(Exception e){
+			logger.error("通过ID查询站点详情出错!id={}",key.getId(), e);
+			return new ResponseResult<DeliveryRecordVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<DeliveryRecordVo> deleteDeliveryRecord(DeliveryRecordVo key) {
+		ResponseResult<DeliveryRecordVo> respResult=new ResponseResult<DeliveryRecordVo>();
+		try{
+			DeliveryRecordBean dr=new DeliveryRecordBean();
+			dr.setId(key.getId());
+			dr.setDeleted(true);
+			dr.setUpdateTime(new Date());
+			deliveryRecordMapper.updateByPrimaryKeySelective(dr);
+		}catch(Exception e){
+			logger.error("通过ID删除站点数据出错!id={}",key.getId(), e);
+			return new ResponseResult<DeliveryRecordVo>(ResultEnum.SYS_ERR);
+		}
+		
+		
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<DeliveryRecordVo> updateDeliveryRecord(DeliveryRecordVo vo) {
+		ResponseResult<DeliveryRecordVo> respResult=new ResponseResult<DeliveryRecordVo>();
+		try{
+			DeliveryRecordBean dr=new DeliveryRecordBean();
+			PropertyUtils.copyProperties(dr, vo);
+			dr.setUpdateTime(new Date());
+			deliveryRecordMapper.updateByPrimaryKeySelective(dr);
+		}catch(Exception e){
+			logger.error("通过ID更新站点数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<DeliveryRecordVo>(ResultEnum.SYS_ERR);
+		}
+		
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<DeliveryRecordVo> updateDeliveryRecordStatus(DeliveryRecordVo vo) {
+		ResponseResult<DeliveryRecordVo> respResult=new ResponseResult<DeliveryRecordVo>();
+		try{
+			DeliveryRecordBean dr=new DeliveryRecordBean();
+			dr.setId(vo.getId());
+			dr.setEnabled(vo.getEnabled());
+			dr.setUpdateTime(new Date());
+			deliveryRecordMapper.updateByPrimaryKeySelective(dr);
+		}catch(Exception e){
+			logger.error("通过ID更新站点数据出错!id={}",vo.getId(), e);
+			return new ResponseResult<DeliveryRecordVo>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<DeliveryRecordVo> addDeliveryRecord(DeliveryRecordVo vo) {
+		ResponseResult<DeliveryRecordVo> respResult=new ResponseResult<DeliveryRecordVo>();
+		DeliveryRecordBean drBean=new DeliveryRecordBean();
+		try{
+			PropertyUtils.copyProperties(drBean, vo);
+			drBean.setId(null);
+			deliveryRecordMapper.addDeliveryRecord(drBean);
+			String newKey="VE";
+			String strId = String.valueOf(drBean.getId());
+	        String add0="";
+			for (int i = 0; i < 5-strId.length(); i++) {
+				add0+="0";
+			}
+			newKey=newKey+add0+strId;
+			DeliveryRecordBean drBean2=new DeliveryRecordBean();
+			drBean2.setId(drBean.getId());
+			drBean2.setCode(newKey);
+			deliveryRecordMapper.updateByPrimaryKeySelective(drBean2);
+			vo.setId(drBean.getId());
+			respResult.setData(vo);
+		}catch(Exception e){
+			logger.error("添加站点数据出错!",drBean, e);
+			return new ResponseResult<DeliveryRecordVo>(ResultEnum.SYS_ERR);
+		}
+		
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<Map<String, Object>> initDropDownBox(Long operatorId) {
+		ResponseResult<Map<String,Object>> respResult=new ResponseResult<Map<String,Object>>();
+		try{
+			List<DictBean> deliveryTypeList=DictCacheUtil.get(operatorId, Constants.AUTH_DELIVERY_TYPE);
+			List<DictBean> levelList=DictCacheUtil.get(operatorId, Constants.AUTH_LEVEL);
+			Map<String,Object> map=new HashMap<String,Object>();
+			map.put("deliveryTypeList", deliveryTypeList);
+			map.put("levelList", levelList);
+			respResult.setData(map);
+		}catch(Exception e){
+			logger.error("此站点查询列表出错!id={}",operatorId, e);
+			return new ResponseResult<Map<String,Object>>(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public List<DeliveryRecordVo> mulDRName(List<Long> list) {
+		if(list == null || list.size() ==0){
+			logger.warn("根据运营商id查询名称，参数list 为空");
+			return null;
+		}
+		List<DeliveryRecordVo> nameList=deliveryRecordMapper.mulDRName(list);
+		return nameList;
+	}
+
+	@Override
+	public ResponseResult<DeliveryRecordVo> queryDRByUserID(Long centerId) {
+		ResponseResult<DeliveryRecordVo> respResult=new ResponseResult<DeliveryRecordVo>();
+		try{
+			DeliveryRecordVo drVo = deliveryRecordMapper.queryDRByUserID(centerId);
+			if (null == drVo) {
+				return respResult.failure(ResultEnum.EMPTY);
+			}
+			respResult.setData(drVo);
+		}catch(Exception e){
+			logger.error("通过ID查询站点详情出错!id={}",centerId, e);
+			return respResult.failure(ResultEnum.SYS_ERR);
+		}
+		return respResult;
+	}
+
+	@Override
+	public ResponseResult<List<DeliveryRecordVo>> getMyDistributionSiteList(DeliveryRecordSearchVo vo) {
+		ResponseResult<List<DeliveryRecordVo>> rsp = new ResponseResult<List<DeliveryRecordVo>>();
+		try {
+			String userId = String.valueOf(vo.getUserId());
+			String operatorId = String.valueOf(vo.getOperatorId());
+			Map<String,Object> map=new HashMap<String,Object>();
+			map.put("vo", vo);
+			//获取我管理的站点列表
+			List<DeliveryRecordVo> list = deliveryRecordMapper.queryDeliveryRecords(map);	
+					
+			return rsp.success(list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return rsp.err();
+		}
+	}
+
+}

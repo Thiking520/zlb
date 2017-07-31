@@ -1,0 +1,11 @@
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://192.168.24.60:3306/zlb_erp_auth?useUnicode=true&characterEncoding=UTF-8
+#jdbc.url=jdbc:mysql://127.0.0.1:3306/zlb_erp_auth?useUnicode=true&characterEncoding=UTF-8
+
+jdbc.username=root
+jdbc.password=ZLB-erp-123
+
+jdbc.initialSize=1
+jdbc.minIdle=1
+jdbc.maxActive=20
+jdbc.maxWait=60000

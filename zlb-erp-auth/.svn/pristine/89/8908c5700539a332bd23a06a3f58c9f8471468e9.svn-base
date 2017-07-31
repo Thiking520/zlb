@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsTypeMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsTypeVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="type_name" property="typeName" jdbcType="VARCHAR" />
+    <result column="type_desc" property="typeDesc" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+    <result column="enabled" property="enabled" jdbcType="BIT" />
+    <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, operator_id, parent_id, type_name, type_desc, sort_index, enabled, image_url, 
+    create_time, creator, update_time, modifier, deleted
+  </sql>
+  
+  <!-- 查询所有，树形显示 -->
+  <select id="goodsTypeTree" resultMap="BaseResultMap">
+  	SELECT * FROM t_goods_type type where type.deleted = 0 and type.operator_id=#{operatorId}
+  	ORDER BY type.sort_index ASC
+  </select>
+  
+  <!-- 删除分类时判断有没有被引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+   	SELECT SUM(a) as num from (
+	SELECT COUNT(*) as a from t_goods_material material where material.deleted = 0 and material.goods_type in
+	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+	UNION ALL
+	SELECT COUNT(*) as a from t_goods goods where goods.goods_type in 
+	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+	) as tmp
+  </select>
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhilianbao.erp.auth.mapper.user.RoleMapper">
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.user.RoleVo">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="uniqueKey" jdbcType="VARCHAR" property="uniquekey" />
+    <result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="role_icon" jdbcType="VARCHAR" property="roleIcon" />
+    <result column="role_description" jdbcType="VARCHAR" property="roleDescription" />
+    <result column="enabled" jdbcType="BIT" property="enabled" />
+    <result column="creator" jdbcType="BIGINT" property="creator" />
+    <result column="modifier" jdbcType="BIGINT" property="modifier" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="deleted" jdbcType="BIT" property="deleted" />
+  </resultMap>
+  
+  
+  
+  <sql id="Base_Column_List">
+  
+    <!--
+      WARNING - @mbggenerated
+    -->
+    id, uniqueKey, operator_id, role_name, role_icon, role_description, enabled, creator, 
+    modifier, create_time, update_time, deleted
+  </sql>
+  
+  <select id="queryRolesListByPage" parameterType="com.zhilianbao.erp.auth.vo.user.RolePageVo" resultMap="BaseResultMap">
+  	select r.*,o.company_name as operatorName,u1.user_name creatorStr,u2.user_name modifierStr from t_role r
+		left join t_operator_company o on r.operator_id = o.company_key 
+		left join t_user_admin u1 on r.creator = u1.center_id
+		left join t_user_admin u2 on r.modifier = u2.center_id
+  	where
+	  	r.deleted = false
+	  	and o.enabled = true
+	  	and o.deleted = false
+  	<if test="operatorId != null and operatorId != ''">
+  		and r.operator_id = #{operatorId}
+  	</if>
+  	<if test="enabled != null">
+  		and r.enabled = #{enabled}
+  	</if>
+  	<if test="uniquekey != null and uniquekey != ''">
+  		and r.uniqueKey like '%${uniquekey}%'
+  	</if>
+  	<if test="roleName != null and roleName != ''">
+  		and r.role_name like '%${roleName}%'
+  	</if>
+  	<if test="createTimeStr != null and createTimeStr != '' and createTimeEnd != null and createTimeEnd != ''">
+  		and r.create_time &gt;= #{createTimeSta} and r.create_time &lt;= #{createTimeEnd}
+  	</if>
+  	<if test="updateTimeStr != null and updateTimeStr != '' and updateTimeEnd != null and updateTimeEnd != ''">
+  		and r.update_time &gt;= #{updateTimeSta} and r.update_time &lt;= #{updateTimeEnd}
+  	</if>
+  </select>
+  
+  <update id="deleteRoleById" parameterType="com.zhilianbao.erp.auth.entity.user.RoleBean">
+  		update t_role 
+  		<set>
+  			<if test="deleted != null and deleted != ''">
+  				deleted = #{deleted}
+  			</if>
+  			<if test="modifier != null and modifier != ''">
+  				modifier = #{deleted}
+  			</if>
+  			<if test="updateTime != null and updateTime != ''">
+  				update_time = #{updateTime}
+  			</if>
+  		</set>
+  		where id = #{id}
+  </update>
+  
+  <select id = "findRoleById" resultMap="BaseResultMap">
+  	select r.*,o.company_name as operatorName from t_role as r,t_operator_company as o  where r.id = #{id} and o.company_key = r.operator_id and o.deleted = false and o.enabled = true
+  	<if test="operatorId != null and operatorId != '' and operatorId != 0">
+  		and r.operator_id = #{operatorId}
+  	</if>
+  </select>
+  
+  <select id= "findAll" resultMap="BaseResultMap">
+  	select r.* from t_role as r where r.deleted = false and r.enabled = true 
+  	<if test="operatorId != null and operatorId != ''">
+  		and r.operator_id = #{operatorId}
+  	</if>
+  	 order by id
+  </select>
+  
+</mapper>

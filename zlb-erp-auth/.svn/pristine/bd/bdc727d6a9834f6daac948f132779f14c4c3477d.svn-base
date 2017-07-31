@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_type" property="goodsType" jdbcType="BIGINT" />
+    <result column="goods_code" property="goodsCode" jdbcType="VARCHAR" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="slave_title" property="slaveTitle" jdbcType="VARCHAR" />
+    <result column="goods_mode" property="goodsMode" jdbcType="SMALLINT" />
+    <result column="goods_desc" property="goodsDesc" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="goods_status" property="goodsStatus" jdbcType="INTEGER" />
+    <result column="goods_image_url" property="goodsImageUrl" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    
+    <!-- t_goods_type -->
+    <result column="type_name" property="typeName" jdbcType="VARCHAR" />
+    
+    <!-- t_goods_stock -->
+    <result column="sale_unit_name" property="saleUnitName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="DetailsResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsVo" >
+  	<id column="id" property="id" jdbcType="BIGINT" />
+  	<result column="type_id" property="typeId" jdbcType="VARCHAR" />
+  	<result column="type_name" property="typeName" jdbcType="VARCHAR" />
+  	<result column="goods_code" property="goodsCode" jdbcType="VARCHAR" />
+  	<result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="slave_title" property="slaveTitle" jdbcType="VARCHAR" />
+    <result column="goods_mode" property="goodsMode" jdbcType="SMALLINT" />
+  	<result column="goods_desc" property="goodsDesc" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+    <result column="goods_image_url" property="goodsImageUrl" jdbcType="VARCHAR" />
+    
+    <collection property="tagList" javaType="ArrayList" column="id" ofType="com.zhilianbao.erp.auth.vo.goods.GoodsTagVo" select="getTagList" >
+	</collection>
+  </resultMap>
+  
+  <resultMap id="TagResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsTagVo">  
+   	<id column="id" property="id" jdbcType="BIGINT" />
+    <result column="tag_name" property="tagName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  
+  <sql id="Base_Column_List" >
+    id, goods_type, goods_code, title, slave_title, goods_mode, goods_desc, sort_index, 
+    operator_id, goods_status, goods_image_url, create_time, creator, update_time, modifier
+  </sql>
+  
+  <!-- 分页查询 -->
+  <select id="queryGoodsListByPage" resultMap="BaseResultMap">
+  	SELECT goods.*, type.type_name FROM (SELECT <include refid="Base_Column_List" /> FROM t_goods) goods
+  	left join t_goods_type type on goods.goods_type = type.id
+  	where 1=1 AND goods.operator_id = #{operatorId}
+  	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND goods.title like concat('%',#{searchKeyword},'%')
+  	</if>
+  	<if test="searchType != null and searchType != '' ">
+  	 AND goods.goods_type = #{searchType}
+  	</if>
+  	<if test="status != null and status != '' ">
+  	 AND goods.goods_status = #{status}
+  	</if>
+  	ORDER BY goods.create_time desc
+  </select>
+  
+  <select id="queryById" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> FROM t_goods goods where goods.id = #{id} 
+  </select>
+  
+  <select id="isExistsGoodsCode" resultType="Integer">
+  	SELECT COUNT(*) FROM t_goods goods where goods.goods_code = #{goods_code} 
+  </select>
+  
+  <!-- 查询详情 -->
+  <select id="queryDetailsById" resultMap="DetailsResultMap">
+  	SELECT goods.*, type.id as type_id, type.type_name as type_name FROM (SELECT <include refid="Base_Column_List" /> FROM t_goods) goods
+  	left join t_goods_type type on goods.goods_type = type.id
+  	where goods.id = #{id} and goods.operator_id = #{operatorId}
+  </select>
+  <select id="getTagList" resultMap="TagResultMap"  >
+	SELECT tag.id, tag.tag_name from t_goods_tag_list list 
+	LEFT JOIN t_goods_tag tag on tag.id = list.tag_id
+	where list.goods_id = #{goodsId}
+  </select>
+  
+  <!-- 组合商品页签，获取供选择的商品列表 -->
+  <select id="queryGoodsListForCollection" resultMap="BaseResultMap">
+  	SELECT a.*  from
+	(SELECT goods.goods_mode as goodsMode, item.id as id, goods.goods_image_url as goodsImageUrl, goods.title as title, goods.operator_id as operatorId ,
+	(SELECT dict.dict_desc from t_system_dict dict where dict.dict_type = 'goods_unit' and dict.dict_value = stock.sale_unit and dict.operator_id = goods.operator_id) as sale_unit_name
+	from t_goods_item item 
+	LEFT JOIN t_goods goods on goods.id = item.goods_id
+    LEFT JOIN t_goods_stock stock on stock.id = item.goods_stock_id
+	UNION
+	SELECT goods.goods_mode as goodsMode, list.id as id, goods.goods_image_url as goodsImageUrl, 
+    CONCAT(goods.title,"+",(SELECT GROUP_CONCAT(cast(sku.sku_name as char) SEPARATOR '-') from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id)) as title, 
+    goods.operator_id as operatorId ,
+    (SELECT dict.dict_desc from t_system_dict dict where dict.dict_type = 'goods_unit' 
+	and dict.dict_value = stock.sale_unit and dict.operator_id = goods.operator_id) as sale_unit_name
+    from t_goods_sku_list list 
+	LEFT JOIN t_goods goods on goods.id = list.goods_id 
+    LEFT JOIN t_goods_sku_recode recode on list.record_id = recode.id
+    LEFT JOIN t_goods_stock stock on stock.id = list.goods_stock_id) 
+    a where 1=1 and a.operatorId = #{operatorId}
+	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND a.title like concat('%',#{searchKeyword},'%')
+  	</if>
+  </select>
+  
+  <!-- 删除商品时判断有没有被引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+	SELECT COUNT(*) as a from t_goods_collection collection 
+	LEFT JOIN t_goods_item item on collection.goods_item_id = item.id where item.goods_id in 
+	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </select>
+  
+  
+  <!-- TMS-》调度管理-》查看货品详情 ，调用此接口获取商品信息-->
+  <select id="mulGoodsInfo" parameterType="list" resultType="com.zhilianbao.erp.auth.vo.goods.facade.RspGoodsRestVo">
+  	<!-- 单品 -->
+    SELECT goods.goods_code as goodsCode, goods.title, goods.goods_image_url as goodsImageUrl,
+    (SELECT dict.dict_desc from t_system_dict dict where dict.dict_type = 'goods_unit' and dict.dict_value = stock.sale_unit and dict.operator_id = goods.operator_id) as skuName, 
+    type.type_name as goodsTypeName, 
+	(SELECT list.property_item_value from t_goods_property_list list 
+	where list.goods_id = goods.id and list.property_id = 1) as weight,
+	(SELECT list.property_item_value from t_goods_property_list list 
+	where list.goods_id = goods.id and list.property_id = 2) as volume,
+	(SELECT group_concat(item.property_value) FROM t_goods_property_item item 
+	where item.id REGEXP (SELECT REPLACE (list.property_item_value, ',', '|') 
+	FROM t_goods_property_list list WHERE list.goods_id = goods.id and list.property_id = 3)) as sendMode,
+	(SELECT item.property_value from t_goods_property_list list 
+	LEFT JOIN t_goods_property_item item on item.property_id = list.property_id
+	where list.goods_id = goods.id and list.property_id = 4 and item.id = list.property_item_value) as sizeType
+	from t_goods_item item 
+	LEFT JOIN t_goods goods on item.goods_id = goods.id
+	LEFT JOIN t_goods_type type on type.id = goods.goods_type
+	LEFT JOIN t_goods_stock stock on stock.id = item.goods_stock_id
+    where goods.goods_mode = 0
+    <if test="list != null">
+        and goods.goods_code in 
+	    <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+	    	#{item.goodsCode}
+	    </foreach>
+    </if>
+    UNION 
+    <!-- 多规格商品，用UNION ALL查询结果会多出来-->
+     SELECT goods.goods_code as goodsCode, goods.title, goods.goods_image_url as goodsImageUrl, 
+     CONCAT(goods.title,"+",(SELECT GROUP_CONCAT(cast(sku.sku_name as char) SEPARATOR '-') 
+	from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id
+	where recode.parent_id = list.record_id),"+",(SELECT dict.dict_desc from t_system_dict dict where dict.dict_type = 'goods_unit' 
+	and dict.dict_value = stock.sale_unit and dict.operator_id = goods.operator_id)) as skuName, 
+	type.type_name as goodsTypeName, 
+	(SELECT property.property_item_value from t_goods_property_list property 
+	where property.goods_id = goods.id and property.goods_sku_id = list.id and property.property_id = 1) as weight,
+	(SELECT property.property_item_value from t_goods_property_list property 
+	where property.goods_id = goods.id and property.goods_sku_id = list.id and property.property_id = 2) as volume,
+  	(SELECT group_concat(item.property_value) FROM t_goods_property_item item 
+	where item.id REGEXP (SELECT REPLACE (property.property_item_value, ',', '|') 
+	FROM t_goods_property_list property WHERE property.goods_id = goods.id and property.goods_sku_id = list.id and property.property_id = 3)) as sendMode,
+	(SELECT item.property_value from t_goods_property_list property 
+	LEFT JOIN t_goods_property_item item on item.property_id = property.property_id
+	where property.goods_id = goods.id and property.goods_sku_id = list.id and property.property_id = 4 and item.id = property.property_item_value) as sizeType
+	from t_goods_sku_list list 
+	LEFT JOIN t_goods goods on list.goods_id = goods.id
+	LEFT JOIN t_goods_type type on type.id = goods.goods_type
+	LEFT JOIN t_goods_stock stock on stock.id = list.goods_stock_id
+    where goods.goods_mode = 1 
+    <if test="list != null">
+        and goods.goods_code in 
+	    <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+	    	#{item.goodsCode}
+	    </foreach>
+	    and list.id in
+	    <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+	    	#{item.skuId}
+	    </foreach>
+    </if>
+    UNION 
+    <!-- 组合商品 -->
+    SELECT goods.goods_code as goodsCode, goods.title, goods.goods_image_url as goodsImageUrl, '' as skuName, type.type_name as goodsTypeName, 
+	(SELECT list.property_item_value from t_goods_property_list list 
+	where list.goods_id = goods.id and list.property_id = 1) as weight,
+	(SELECT list.property_item_value from t_goods_property_list list 
+	where list.goods_id = goods.id and list.property_id = 2) as volume,
+	(SELECT group_concat(item.property_value) FROM t_goods_property_item item 
+	where item.id REGEXP (SELECT REPLACE (list.property_item_value, ',', '|') 
+	FROM t_goods_property_list list WHERE list.goods_id = goods.id and list.property_id = 3)) as sendMode,
+	(SELECT item.property_value from t_goods_property_list list 
+	LEFT JOIN t_goods_property_item item on item.property_id = list.property_id
+	where list.goods_id = goods.id and list.property_id = 4 and item.id = list.property_item_value) as sizeType
+	from t_goods goods 
+	LEFT JOIN t_goods_type type on type.id = goods.goods_type
+  	where goods.goods_mode = 2
+  	<if test="list != null">
+        and goods.goods_code in 
+	    <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+	    	#{item.goodsCode}
+	    </foreach>
+    </if>
+  </select>
+  
+  <select id="querGoods" resultType="com.zhilianbao.erp.auth.vo.goods.GoodsVo">
+  	SELECT * FROM t_goods goods 
+	<trim prefix="WHERE" prefixOverrides="AND |OR "> 
+  		<if	test="typeId !=null">
+   			and goods.goods_type = #{typeId}
+   		</if>
+   		<if	test="operatorId !=null">
+   			and goods.operator_id = #{operatorId}
+   		</if>  		
+	</trim>
+  </select>
+  
+  <!-- 分页查询 -->
+  <select id="queryGoodsListPage" resultMap="BaseResultMap">
+		SELECT
+			goods_mode AS goodsMode,good_code AS goodsCode,title,operator_id AS operatorId
+		FROM
+			(
+				SELECT
+					goods_mode,
+					(
+						CASE
+						WHEN goods_mode = '0' THEN
+							concat('I_', id)
+						ELSE
+							concat('C_', id)
+						END
+					) AS 'good_code',
+					title,
+					operator_id
+				FROM
+					t_goods
+				WHERE
+					goods_mode IN (0, 2)
+				UNION ALL
+					SELECT
+						t_goods.goods_mode,
+						concat('S_', t_goods_sku_list.id) AS good_code,
+						concat(
+							t_goods.title,
+							'--',
+							t_goods_sku_list.sku_subtitle
+						) AS title,
+						t_goods.operator_id
+					FROM
+						t_goods_sku_list
+					JOIN t_goods ON t_goods_sku_list.goods_id = t_goods.id
+					UNION ALL
+						SELECT
+							'3' AS 'goods_mode',
+							concat('O_', id) AS good_code,
+							goods_name AS title,
+							operator_id
+						FROM
+							t_goods_original
+			) AS tb_all_goods
+		where 1=1 AND operator_id = #{operatorId} AND goods_mode = #{searchDesc}
+  	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND title like concat('%',#{searchKeyword},'%')
+  	</if>
+  	<if test="searchKey != null and searchKey != '' ">
+  	 AND good_code like concat('%',#{searchKey},'%')
+  	</if>
+  	ORDER BY good_code ASC
+  </select>
+</mapper>

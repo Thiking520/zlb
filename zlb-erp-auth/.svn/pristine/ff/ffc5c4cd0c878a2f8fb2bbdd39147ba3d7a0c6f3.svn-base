@@ -1,0 +1,32 @@
+package com.zhilianbao.erp.auth.listenner;
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Service;
+
+
+/**
+ * @company zhilianbao
+ * @author kuangzengye
+ * @date   2017年3月9日 下午11:14:25
+ * @description 初始化数据
+ * @Version 1.0
+ */
+@Service
+public class InitListener implements ApplicationListener<ContextRefreshedEvent> {
+	
+	private static final Logger logger=LogManager.getLogger(InitListener.class);
+
+	@Override
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		logger.info("start初始类.....");
+		InitParaCache initParaCache=new InitParaCache();
+		initParaCache.start();
+		logger.info("end初始类.....");
+	}
+
+   
+}

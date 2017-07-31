@@ -1,0 +1,44 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsItemBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsItemVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 单品
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:33:19
+ */
+public interface GoodsItemMapper extends BaseMapper<GoodsItemBean> {
+	
+	/**
+	 * 单品：根据goodsId查询详情列表
+	 * @param vo
+	 * @return ：GoodsItemVo
+	 * @author ：chenll
+	 * @date ：2017年3月30日 上午11:52:47
+	 */
+	GoodsItemVo queryByGoodsId(GoodsItemVo vo);
+	
+	/**
+	 * 根据id获取对象
+	 * @param vo
+	 * @return ：GoodsSkuListVo
+	 * @author ：fmc
+	 *date ：2017年3月30日 上午11:52:47
+	 */
+	GoodsItemVo getById(@Param(value = "id") Long id);
+
+	/**
+	 * 修改转换率
+	 * @param goodsItemBean ：void
+	 * @author ：chenll
+	 * @date ：2017年6月16日 下午7:14:52
+	 */
+	void updateConversionRate(GoodsItemBean goodsItemBean);
+	
+	
+}

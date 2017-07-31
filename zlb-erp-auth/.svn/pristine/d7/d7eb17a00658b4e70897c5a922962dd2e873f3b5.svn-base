@@ -1,0 +1,22 @@
+package com.zhilianbao.erp.auth.mapper.user;
+
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.user.RoleMenuListBean;
+import com.zhilianbao.erp.auth.vo.user.RoleMenuListVo;
+
+import tk.mybatis.mapper.common.Mapper;
+
+public interface RoleMenuListMapper extends Mapper<RoleMenuListBean> {
+
+	List<RoleMenuListVo> findAuthByRoleId(RoleMenuListVo vo);
+
+	void updateBatch(RoleMenuListVo listVo);
+
+	RoleMenuListVo findAuthByRoleAndMenu(RoleMenuListVo livo);
+
+	void updateStatusTrueById(RoleMenuListVo roleAuthVo);
+
+	void updateStatusFalse(RoleMenuListVo lvo);
+}

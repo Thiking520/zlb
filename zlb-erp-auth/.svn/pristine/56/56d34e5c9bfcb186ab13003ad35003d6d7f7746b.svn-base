@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsSkuListMapper" >
+  <!-- 多规格商品t_goods_sku_list -->
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsSkuListVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_id" property="goodsId" jdbcType="BIGINT" />
+    <result column="record_id" property="recordId" jdbcType="BIGINT" />
+    <result column="goods_stock_id" property="goodsStockId" jdbcType="BIGINT" />
+    <result column="sku_store" property="skuStore" jdbcType="INTEGER" />
+    <result column="sku_subtitle" property="skuSubtitle" jdbcType="VARCHAR" />
+    <result column="stock_type" property="stockType" jdbcType="SMALLINT" />
+    <result column="relate_original_good" property="relateOriginalGood" jdbcType="BIGINT" />
+    <result column="conversion_rate" property="conversionRate" jdbcType="DECIMAL" />
+  </resultMap>
+  
+  <!-- t_goods_sku_recode -->
+  <resultMap id="goodsSkuRecodeMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsSkuRecodeVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="sku_id" property="skuId" jdbcType="BIGINT" />
+    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+    <result column="skuParentId" property="skuParentId" jdbcType="VARCHAR" />
+    
+  </resultMap>
+  
+  <!-- 列表详情，编辑详情 -->
+  <resultMap id="skuDetailsResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsSkuListVo" >
+  	<id column="id" property="id" jdbcType="BIGINT" />
+  	 <result column="goods_id" property="goodsId" jdbcType="BIGINT" />
+  	<result column="record_id" property="recordId" jdbcType="BIGINT" />
+  	<result column="goods_stock_id" property="goodsStockId" jdbcType="BIGINT" />
+  	<result column="sku_store" property="skuStore" jdbcType="INTEGER" />
+  	<result column="sku_subtitle" property="skuSubtitle" jdbcType="VARCHAR" />
+  	
+  	<!-- t_goods表 -->
+    <result column="title" property="title" jdbcType="VARCHAR" />
+  	<result column="goods_code" property="goodsCode" jdbcType="VARCHAR" />
+  	
+  	<!-- t_goods_price表 -->
+  	<result column="cost_price" property="costPrice" jdbcType="DECIMAL" />
+  	<result column="store_price" property="storePrice" jdbcType="DECIMAL" />
+  	
+    <association property="stockVo" column="goods_stock_id" select="com.zhilianbao.erp.auth.mapper.goods.GoodsStockMapper.getByStockId">
+    </association>
+	
+    <!-- t_goods_sku_recode表 -->
+  	<collection property="skuList" javaType="ArrayList" column="record_id" ofType="com.zhilianbao.erp.auth.vo.goods.GoodsSkuRecodeVo" select="getSkuRecodeList" >
+	</collection>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, goods_id, record_id, goods_stock_id, sku_store, sku_subtitle, stock_type
+  </sql>
+  
+  <!-- 多规格商品：根据goodsId查询详情列表 -->
+  <select id="querySkuDetailsByGoodsId" resultMap="skuDetailsResultMap">
+  	SELECT list.id, list.goods_id, list.record_id, list.goods_stock_id, list.sku_store, list.sku_subtitle, list.stock_type, goods.title, goods.goods_code, price.cost_price, price.store_price,
+  	original.id as relateOriginalGood,original.goods_name as relateOriginalGoodName,list.conversion_rate as conversionRate
+	from t_goods_sku_list list 
+	LEFT JOIN t_goods goods on goods.id = list.goods_id
+	LEFT JOIN t_goods_price price on price.goods_id = goods.id and price.goods_sku_id = list.id
+	LEFT JOIN t_goods_original original on original.id = list.relate_original_good
+	where list.goods_id = #{goodsId}
+  </select>
+  <select id="getSkuRecodeList" resultMap="goodsSkuRecodeMap" >
+	SELECT recode.id, recode.parent_id, recode.sku_id, sku.sku_name, sku.parent_id skuParentId from t_goods_sku_recode recode 
+	LEFT JOIN t_goods_sku sku on sku.id = recode.sku_id
+	where recode.parent_id = #{record_id}
+  </select>
+  
+  <!-- 根据id获取对象 -->
+  <select id="getById" resultMap="BaseResultMap" >
+	SELECT id, goods_id, record_id, goods_stock_id, sku_store, sku_subtitle, stock_type,relate_original_good,conversion_rate from t_goods_sku_list  where id = #{id}
+  </select>
+  
+  <!-- 批量删除 -->
+  <update id="deleteBatchByIds">
+  	delete from t_goods_sku_list where id in 
+   	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+  <!-- 根据运营商id获取多规格商品列表：电商平台需要调用的接口 -->
+  <select id="querSku" resultType="com.zhilianbao.erp.auth.vo.goods.facade.ResGoodsSkuListVo">
+  	SELECT list.id, list.goods_id,list.record_id,goods_price.suggest_price as suggestPrice,goods_price.mall_price as mallPrice,
+	(SELECT group_concat(sku.id) from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id) as skuIds, 
+	(SELECT group_concat(sku.sku_name) from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id) as skuNames,
+	(SELECT group_concat(sku.id) from t_goods_sku sku WHERE id in (SELECT sku.parent_id from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id)) as skuParentIds,
+	(SELECT group_concat(sku.sku_name) from t_goods_sku sku WHERE id in (SELECT sku.parent_id from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id)) as skuParentNames
+	from t_goods_sku_list list 
+	LEFT JOIN t_goods goods on list.goods_id = goods.id
+	LEFT JOIN t_goods_sku_recode recode on recode.id = list.record_id
+	LEFT JOIN t_goods_price goods_price on goods_price.goods_sku_id= list.id
+	where goods.goods_status != 3 and goods.operator_id = #{operatorId} and goods.goods_mode = 1
+	<if	test="typeId !=null">
+		and goods.goods_type = #{typeId}
+	</if>
+  </select>
+  
+   <!-- 根据goodsId获取多规格商品详情：电商平台需要调用的接口 -->
+  <select id="querSkuDetail" resultType="com.zhilianbao.erp.auth.vo.goods.facade.ResGoodsSkuListVo">
+  	SELECT list.id, list.goods_id,list.record_id,
+	(SELECT group_concat(sku.id) from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id) as skuIds, 
+	(SELECT group_concat(sku.sku_name) from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id) as skuNames,
+	(SELECT group_concat(sku.id) from t_goods_sku sku WHERE id in (SELECT sku.parent_id from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id)) as skuParentIds,
+	(SELECT group_concat(sku.sku_name) from t_goods_sku sku WHERE id in (SELECT sku.parent_id from t_goods_sku_recode recode LEFT JOIN t_goods_sku sku on recode.sku_id = sku.id where recode.parent_id = list.record_id)) as skuParentNames
+	from t_goods_sku_list list 
+	LEFT JOIN t_goods goods on list.goods_id = goods.id
+	LEFT JOIN t_goods_sku_recode recode on recode.id = list.record_id
+	where goods.goods_status != 3 and goods.operator_id = #{operatorId} and goods.goods_mode = 1 and goods.id = #{id}
+  </select>
+  
+  <!-- 修改转换率 -->
+  <update id="updateConversionRate">
+  	UPDATE t_goods_sku_list SET relate_original_good = #{relateOriginalGood},conversion_rate = #{conversionRate} WHERE id = #{id}
+  </update> 
+</mapper>

@@ -1,0 +1,13 @@
+package com.zhilianbao.erp.auth.service.user;
+
+import com.zhilianbao.erp.auth.vo.user.MenuVo;
+import com.zhilianbao.erp.auth.vo.user.RoleMenuListVo;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+public interface IRoleMenuListService {
+
+	ResponseResult<MenuVo> getAuthByRole(RoleMenuListVo vo);
+
+	ResponseResult<MenuVo> modifyAuth(RoleMenuListVo vo);
+
+}

@@ -1,0 +1,29 @@
+package com.zhilianbao.erp.auth.impl.goods.facade;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.service.goods.IGoodsService;
+import com.zhilianbao.erp.auth.service.goods.facade.IGoodsRestService;
+import com.zhilianbao.erp.auth.vo.goods.facade.ReqGoodsRestVo;
+import com.zhilianbao.erp.auth.vo.goods.facade.RspGoodsRestVo;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+
+@Service
+public class GoodsRestServiceImpl implements IGoodsRestService {
+	
+	@Autowired
+	private IGoodsService iGoodsService;
+	
+	@Override
+	public ResponseValue<List<RspGoodsRestVo>> mulGoodsInfo(ReqGoodsRestVo goodsRestVo) {
+		ResponseValue<List<RspGoodsRestVo>> responseValue=new ResponseValue<List<RspGoodsRestVo>>();
+		if(goodsRestVo == null){
+			return responseValue.failure("参数为空！");
+		}
+		List<RspGoodsRestVo> goodsList = iGoodsService.mulGoodsInfo(goodsRestVo.getList());
+		return responseValue.success(goodsList);
+	}
+}

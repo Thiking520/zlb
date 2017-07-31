@@ -1,0 +1,34 @@
+package com.zhilianbao.erp.auth.mapper.user;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.user.UserRoleListBean;
+import com.zhilianbao.erp.auth.vo.user.UserRoleListVo;
+import com.zhilianbao.erp.auth.vo.user.UserVo;
+
+import tk.mybatis.mapper.common.Mapper;
+
+public interface UserRoleListMapper extends Mapper<UserRoleListBean> {
+
+	/**
+	 * 通过员工ID查找所有角色
+	 * @param userRoleVo
+	 * @return
+	 */
+	List<UserRoleListVo> findByUserAndRoleId(UserRoleListVo userRoleVo);
+	/**
+	 * 
+	 * @param userRoleVo
+	 * @return
+	 */
+	UserRoleListVo findById(UserRoleListVo userRoleVo);
+
+	UserRoleListVo findByUCenterId(UserVo userAdminVo);
+
+	/**
+	 * 通过统一中心用户ID和运营商ID查找用户角色列表
+	 * @param urlVo
+	 * @return
+	 */
+	List<UserRoleListVo> ownRoleByOperatorId(UserRoleListVo urlVo);
+}

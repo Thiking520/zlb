@@ -1,0 +1,95 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsBean;
+import com.zhilianbao.erp.auth.entity.goods.GoodsItemBean;
+import com.zhilianbao.erp.auth.entity.goods.GoodsStockBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsItemMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsStockMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsStockService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsItemVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsStockVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsVo;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+/**
+ * 商品库存
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月14日 下午2:13:22
+ */
+@Service
+@Transactional
+public class GoodsStockServiceImpl implements IGoodsStockService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsStockServiceImpl.class);
+	
+	@Autowired
+	private GoodsStockMapper goodsStockMapper;
+	@Autowired
+	private GoodsMapper goodsMapper;
+	@Autowired
+	private GoodsItemMapper goodsItemMapper;
+	
+	public ResponseResult<GoodsStockVo> getStockByGoodsId(GoodsVo goodsVo) {
+		ResponseResult<GoodsStockVo> rspResult = new ResponseResult<GoodsStockVo>();
+		try {
+			GoodsStockVo vo = goodsStockMapper.getStockByGoodsId(goodsVo.getId());
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("【商品资料管理-库存信息】根据商品id查价格信息出错{}",goodsVo,e);
+			return new ResponseResult<GoodsStockVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsStockVo> updateData(GoodsStockVo vo) {
+		ResponseResult<GoodsStockVo> rspResult = new ResponseResult<GoodsStockVo>();
+		try {
+			//根据goodsId获取商品信息
+			GoodsBean goodsDetailsBean = new GoodsBean();
+			goodsDetailsBean.setId(vo.getGoodsId());
+			goodsDetailsBean = goodsMapper.selectByPrimaryKey(goodsDetailsBean);
+			//单品，目前组合商品不写t_goods_stock库存表，多规格商品是在添加多规格商品时写的库存表
+			if(goodsDetailsBean.getGoodsMode() == 0){
+				GoodsItemVo goodsItemVo = goodsItemMapper.queryByGoodsId(new GoodsItemVo(vo.getGoodsId()));
+				// 不存在，就新增
+				if(goodsItemVo == null){
+					//t_goods_stock
+					GoodsStockBean bean = new GoodsStockBean();
+					PropertyUtils.copyProperties(bean,vo);
+					goodsStockMapper.insertSelective(bean);
+					
+					//t_goods_item
+					GoodsItemBean goodsItemBean = new GoodsItemBean();
+					goodsItemBean.setGoodsId(vo.getGoodsId());
+					goodsItemBean.setGoodsStockId(bean.getId());
+					goodsItemMapper.insertSelective(goodsItemBean);
+				}// 存在，修改
+				else{
+					//t_goods_stock
+					GoodsStockBean bean = new GoodsStockBean();
+					PropertyUtils.copyProperties(bean,vo);
+					bean.setId(goodsItemVo.getGoodsStockId());
+					goodsStockMapper.updateByPrimaryKeySelective(bean);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("【商品资料管理-库存信息】修改出错{}",vo, e);
+			// 回滚
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return new ResponseResult<GoodsStockVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+}

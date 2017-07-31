@@ -1,0 +1,24 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsTagListBean;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 商品和商品标签中间表
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:35:55
+ */
+public interface GoodsTagListMapper extends BaseMapper<GoodsTagListBean> {
+	
+	/**
+	 * 商品标签，删除操作时，查询要删除的t_goods_tag有没有被引用
+	 * @param deleteIds
+	 * @return ：int
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午7:19:14
+	 */
+	int getCountByDeleteIds(@Param("deleteIds")Long[] deleteIds);
+}

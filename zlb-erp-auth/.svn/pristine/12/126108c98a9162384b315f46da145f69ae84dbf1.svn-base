@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhilianbao.erp.auth.mapper.user.RoleMenuListMapper">
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.user.RoleMenuListVo">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="role_id" jdbcType="BIGINT" property="roleId" />
+    <result column="menu_id" jdbcType="BIGINT" property="menuId" />
+    <result column="enabled" jdbcType="BIT" property="enabled" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="deleted" jdbcType="BIT" property="deleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    id, role_id, menu_id, enabled, creator, modifier, create_time, update_time, deleted
+  </sql>
+  
+  <select id= "findAuthByRoleId" resultMap="BaseResultMap">
+  	select * from t_role_menu_list where role_id = #{roleId} and enabled = true and deleted = false
+  </select>
+  
+  <select id= "findAuthByRoleAndMenu" resultMap="BaseResultMap">
+  	select * from t_role_menu_list where role_id = #{roleId} and menu_id=#{menuId}
+  </select>
+  
+  <update id="updateBatch" parameterType="com.zhilianbao.erp.auth.entity.user.RoleMenuListBean">
+  	update t_role_menu_list set enabled = false where role_id=#{roleId} and menu_id in 
+   	<foreach collection="menuIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+  <update id="updateStatusTrueById" parameterType="com.zhilianbao.erp.auth.entity.user.RoleMenuListBean">
+  	update t_role_menu_list set id=#{id}
+  		<if test="roleId != null and roleId != ''">
+  			,enabled = #{enabled}
+  		</if>
+  		<if test="creator != null and creator != ''">
+  			,creator = #{creator}
+  		</if>
+  		<if test="modifier != null and modifier != ''">
+  			,modifier = #{modifier}
+  		</if>
+  		<!-- <if test="updateTime != null and updateTime != ''">
+  			,update_time = #{updateTime,jdbcType=TIMESTAMP}
+  		</if> -->
+  	  where id=#{id}
+  </update>
+  
+  <update id="updateStatusFalse" parameterType="com.zhilianbao.erp.auth.entity.user.RoleMenuListBean">
+  	update t_role_menu_list set enabled = false where menu_id=#{menuId} and role_id = #{roleId}
+  </update>
+</mapper>

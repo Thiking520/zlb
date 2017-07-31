@@ -1,0 +1,194 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.goods.GoodsOriginalBean;
+import com.zhilianbao.erp.auth.entity.goods.GoodsTypeBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsOriginalMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsTypeMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsOriginalService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsOriginalSynchVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsOriginalVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsTypeVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+import com.zlb.erp.pms.core.api.service.IGoodsService;
+import com.zlb.erp.pms.core.api.vo.PmsGoodsVo;
+import com.zlb.erp.wms.core.api.service.IWmsSkuConfigService;
+/**
+ * 原始商品业务处理类
+ * @Company: 智联宝 
+ * @author ：luiang
+ * @date ：2017年3月18日 
+ */
+@Service
+public class GoodsOriginalServiceImpl implements IGoodsOriginalService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsOriginalServiceImpl.class);
+	
+	@Autowired
+	IGoodsService goodsService;
+	
+	@Autowired
+	private GoodsOriginalMapper goodsOriginalMapper;
+	
+	@Autowired
+	GoodsTypeMapper goodsTypeMapper;
+	
+	@Autowired
+	IWmsSkuConfigService wmsSkuConfigService;
+	
+	@Override
+	public ResponseResult<Page<GoodsOriginalVo>> queryListByPage(ViewSearchVo vo) {
+		ResponseResult<Page<GoodsOriginalVo>> rspResult = new ResponseResult<Page<GoodsOriginalVo>>();
+		Page<GoodsOriginalVo> page = new Page<GoodsOriginalVo>();
+		rspResult.setData(page);
+		try {
+			// 与mysql中的limit参数一致offset,limit
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize()); // 核心分页代码 开启分页查询，后面第一条查询语句会被分页
+			// 注意:如果有两条查询语句，第二条不会被分页
+			List<GoodsOriginalVo> list = goodsOriginalMapper.queryGoodsListByPage(vo);
+			if (Constants.ZERO == list.size()) {
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+			PageInfo<GoodsOriginalVo> pageInfo = new PageInfo<GoodsOriginalVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<GoodsOriginalVo> pageList = pageInfo.getList();// 推荐使用这个获取结果集
+			
+			if (CollectionUtils.isEmpty(pageList)) {
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+            //分页必填的两个参数
+			page.setTotal(total);
+			page.setRows(pageList);
+			return rspResult.success(page);
+		} catch (Exception e) {
+			logger.error("【商品管理-原始商品】分页查询出错{}",vo,e);
+			return rspResult.err();
+		}
+	}
+
+	@Override
+	public ResponseResult<GoodsOriginalVo> queryDetails(GoodsOriginalVo searchGoodsVo) {
+		ResponseResult<GoodsOriginalVo> rspResult = new ResponseResult<GoodsOriginalVo>();
+		try {
+			
+			GoodsOriginalVo goodsVo =  goodsOriginalMapper.queryDetailsById(searchGoodsVo);
+			rspResult.setData(goodsVo);
+			
+		} catch (Exception e) {
+			logger.error("【商品管理-原始商品】详情出错，id={}",searchGoodsVo.getId(), e);
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsOriginalVo> deleteData(GoodsOriginalVo vo) {
+		ResponseResult<GoodsOriginalVo> rspResult = new ResponseResult<GoodsOriginalVo>();
+		try {
+			GoodsOriginalBean bean = new GoodsOriginalBean();
+			bean.setId(vo.getId());
+			bean.setDeleted(true);
+			goodsOriginalMapper.updateByPrimaryKeySelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-原始商品】删除出错,id={}",vo.getId(), e);
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public ResponseResult<GoodsOriginalVo> updateData(GoodsOriginalVo vo) {
+		ResponseResult<GoodsOriginalVo> rspResult = new ResponseResult<GoodsOriginalVo>();
+		try {
+			GoodsOriginalBean bean = new GoodsOriginalBean();
+			PropertyUtils.copyProperties(bean,vo);
+			goodsOriginalMapper.updateByPrimaryKeySelective(bean);
+			
+			//同步通知pms原始商品变化
+			Long goodsTypeId = vo.getGoodsType();
+			GoodsTypeBean goodsTypeBean = goodsTypeMapper.selectByPrimaryKey(goodsTypeId);
+			PmsGoodsVo pmsGoodsVo = new PmsGoodsVo(vo.getGoodsName(), "O_" +bean.getId(),String.valueOf(goodsTypeId), goodsTypeBean.getTypeName(),
+					vo.getUnitValue(),vo.getUnitDesc(),String.valueOf(goodsTypeBean.getParentId()), String.valueOf(vo.getOperatorId()));
+			goodsService.updateOriginGoodsByGoodsCode(pmsGoodsVo);
+			//同步通知wms原始商品变化
+			wmsSkuConfigService.onUpdateOriginGoods("O_" +bean.getId(), vo.getGoodsName(), vo.getUnitValue(), vo.getUnitDesc());
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("【商品管理-原始商品】修改出错{}",vo, e);
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsOriginalVo> addData(GoodsOriginalVo vo) {
+		ResponseResult<GoodsOriginalVo> rspResult = new ResponseResult<GoodsOriginalVo>();
+		try {
+			GoodsOriginalBean bean = new GoodsOriginalBean();
+			
+			PropertyUtils.copyProperties(bean,vo);
+			bean.setIsSynchronize(1);
+			goodsOriginalMapper.insertSelective(bean);
+			logger.info("auth 添加原始商品，id：{}",bean.getId());
+			//同步通知pms原始商品新增
+			Long goodsTypeId = vo.getGoodsType();
+			GoodsTypeBean goodsTypeBean = goodsTypeMapper.selectByPrimaryKey(goodsTypeId);
+			PmsGoodsVo pmsGoodsVo = new PmsGoodsVo(vo.getGoodsName(), "O_" +bean.getId(),String.valueOf(goodsTypeId), goodsTypeBean.getTypeName(),
+					vo.getUnitValue(),vo.getUnitDesc(),String.valueOf(goodsTypeBean.getParentId()), String.valueOf(vo.getOperatorId()));
+			
+			goodsService.addOriginGoods(pmsGoodsVo);
+			wmsSkuConfigService.addOriginGoods(vo.getOperatorId().toString(), vo.getOperatorName(), "O_" +bean.getId(), vo.getGoodsName(), vo.getUnitValue(), vo.getUnitDesc(),vo.getCreator().toString());
+			rspResult.setData(vo);
+			
+		} catch (Exception e) {
+			logger.error("【商品管理-原始商品】新增出错{}", vo, e);
+			// 回滚
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return rspResult.err();
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<Object> synNewGoodsToPms() {
+		logger.info("进入：公共数据模块》商品信息，供PMS调用,同步新原始商品到PMS，无参数。");
+		/*
+		 * 获取新原始商品,并设置IsSynchronize字段为1
+		 */
+		
+		ResponseResult<Object> r = new ResponseResult<Object>(ResultEnum.SUCCESSE);
+		
+		List<GoodsOriginalSynchVo> goodsList = null;
+		try {
+			goodsList = goodsOriginalMapper.getNewGoodsList();
+			r.setData(goodsList);
+			goodsOriginalMapper.updateSynFlag();
+		} catch (Exception e) {
+			//出现未预判到的错误
+			r.setData(new ArrayList<GoodsTypeVo>());
+			r.failure("006","未知错误，请叫管理员查看错误信息DEBUG");
+			logger.error("异常：公共数据模块》商品信息，供PMS调用,同步新原始商品到PMS。", e);
+			return r;
+		}
+		return r;
+	}
+}

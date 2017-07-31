@@ -1,0 +1,187 @@
+package com.zhilianbao.erp.auth.entity.user;
+
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Table(name = "t_token")
+public class TokenBean {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * 管理员表ID,t_user_admin
+     */
+    @Column(name = "admin_id")
+    private Long adminId;
+
+    /**
+     * 用户token，唯一
+     */
+    @Column(name = "admin_token")
+    private String adminToken;
+
+    /**
+     * 本条记录创建者ID
+     */
+    private Long creator;
+
+    /**
+     * 本条记录修改者ID
+     */
+    private Long modifier;
+
+    /**
+     * 本纪录创建时间
+     */
+    @Column(name = "create_time")
+    private Date createTime;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    /**
+     * 是否删除，为true表示已删除
+     */
+    private Boolean deleted;
+
+    /**
+     * @return id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取管理员表ID,t_user_admin
+     *
+     * @return admin_id - 管理员表ID,t_user_admin
+     */
+    public Long getAdminId() {
+        return adminId;
+    }
+
+    /**
+     * 设置管理员表ID,t_user_admin
+     *
+     * @param adminId 管理员表ID,t_user_admin
+     */
+    public void setAdminId(Long adminId) {
+        this.adminId = adminId;
+    }
+
+    /**
+     * 获取用户token，唯一
+     *
+     * @return admin_token - 用户token，唯一
+     */
+    public String getAdminToken() {
+        return adminToken;
+    }
+
+    /**
+     * 设置用户token，唯一
+     *
+     * @param adminToken 用户token，唯一
+     */
+    public void setAdminToken(String adminToken) {
+        this.adminToken = adminToken;
+    }
+
+    /**
+     * 获取本条记录创建者ID
+     *
+     * @return creator - 本条记录创建者ID
+     */
+    public Long getCreator() {
+        return creator;
+    }
+
+    /**
+     * 设置本条记录创建者ID
+     *
+     * @param creator 本条记录创建者ID
+     */
+    public void setCreator(Long creator) {
+        this.creator = creator;
+    }
+
+    /**
+     * 获取本条记录修改者ID
+     *
+     * @return modifier - 本条记录修改者ID
+     */
+    public Long getModifier() {
+        return modifier;
+    }
+
+    /**
+     * 设置本条记录修改者ID
+     *
+     * @param modifier 本条记录修改者ID
+     */
+    public void setModifier(Long modifier) {
+        this.modifier = modifier;
+    }
+
+    /**
+     * 获取本纪录创建时间
+     *
+     * @return create_time - 本纪录创建时间
+     */
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置本纪录创建时间
+     *
+     * @param createTime 本纪录创建时间
+     */
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    /**
+     * 获取是否删除，为true表示已删除
+     *
+     * @return deleted - 是否删除，为true表示已删除
+     */
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    /**
+     * 设置是否删除，为true表示已删除
+     *
+     * @param deleted 是否删除，为true表示已删除
+     */
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+}

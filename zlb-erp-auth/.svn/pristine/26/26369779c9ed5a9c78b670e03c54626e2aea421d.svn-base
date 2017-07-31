@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.employee.EmployeeMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.employee.EmployeeVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="uniqueKey" property="uniqueKey" jdbcType="VARCHAR" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="occupation_id" property="occupationId" jdbcType="BIGINT" />
+    <result column="kindred_id" property="kindredId" jdbcType="BIGINT" />
+    <result column="distribution_point" property="distributionPoint" jdbcType="BIGINT" />
+    <result column="registry_city" property="registryCity" jdbcType="VARCHAR" />
+    <result column="cn_name" property="cnName" jdbcType="VARCHAR" />
+    <result column="en_name" property="enName" jdbcType="VARCHAR" />
+    <result column="id_no" property="idNo" jdbcType="VARCHAR" />
+    <result column="driver_no" property="driverNo" jdbcType="VARCHAR" />
+    <result column="census_address" property="censusAddress" jdbcType="VARCHAR" />
+    <result column="current_address" property="currentAddress" jdbcType="VARCHAR" />
+    <result column="mobile_no" property="mobileNo" jdbcType="VARCHAR" />
+    <result column="kindred_name" property="kindredName" jdbcType="VARCHAR" />
+    <result column="emergent_mobile_no" property="emergentMobileNo" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="enabled" property="enabled" jdbcType="INTEGER" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+	<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	<result column="modifier" property="modifier" jdbcType="BIGINT" />
+	<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id,uniqueKey,operator_id, occupation_id, kindred_id,distribution_point,registry_city, cn_name, en_name, id_no, 
+    driver_no, census_address, current_address, mobile_no,kindred_name, emergent_mobile_no, description, 
+    enabled, creator, modifier, create_time, update_time, deleted
+  </sql>
+  <select id="findByPage"  resultMap="BaseResultMap">
+  	 SELECT
+		emp.*, oc.company_name operatorName,
+		dr. NAME distributionPointName,
+		USER1.user_name creatorName,
+		USER2.user_name modifierName
+	FROM
+		t_employee_information emp
+	LEFT JOIN t_operator_company oc ON emp.operator_id = oc.company_key
+	LEFT JOIN t_delivery_record dr ON dr.id = emp.distribution_point
+	LEFT JOIN t_user_admin USER1 ON emp.creator = USER1.center_id
+	LEFT JOIN t_user_admin USER2 ON emp.modifier = USER2.center_id
+	WHERE
+		1 = 1 
+	AND emp.deleted = '0'  and emp.operator_id = #{vo.operatorId} 
+  	 <if test="vo !=null and vo.uniqueKey !=null and vo.uniqueKey !=''">
+			and emp.uniqueKey like CONCAT('%',#{vo.uniqueKey},'%')
+		</if>
+		<if test="vo !=null and vo.cnName !=null and vo.cnName !=''">
+			and emp.cn_name  like CONCAT('%',#{vo.cnName},'%')
+		</if>
+		<if test="vo !=null and vo.mobileNo !=null and vo.mobileNo !=''">
+			and emp.mobile_no  like CONCAT('%',#{vo.mobileNo},'%')
+		</if>
+		<if test="vo !=null and vo.registryCity !=null and vo.registryCity !=''">
+			and emp.registry_city = #{vo.registryCity}
+		</if>
+		<if test="vo !=null and vo.occupationId !=null and vo.occupationId !=''">
+			and emp.occupation_id = #{vo.occupationId}
+		</if>
+		<if test="vo !=null and vo.enabled !=null">
+			and emp.enabled = #{vo.enabled}
+		</if>
+		<if test="vo !=null and vo.distributionPoint !=null and  vo.distributionPoint !=''">
+			and emp.distribution_point = #{vo.distributionPoint}
+		</if>
+  </select>
+  <select id="queryEmpDetail"  resultMap="BaseResultMap">
+  	 SELECT
+		emp.*, oc.company_name operatorName,
+		dr. NAME distributionPointName,
+		USER1.user_name creatorName,
+		USER2.user_name modifierName
+	FROM
+		t_employee_information emp
+	LEFT JOIN t_operator_company oc ON emp.operator_id = oc.company_key
+	LEFT JOIN t_delivery_record dr ON dr.id = emp.distribution_point
+	LEFT JOIN t_user_admin USER1 ON emp.creator = USER1.center_id
+	LEFT JOIN t_user_admin USER2 ON emp.modifier = USER2.center_id
+	WHERE  emp.id = #{id} 
+  </select>
+  
+  <select id="findByMobileNo" resultMap="BaseResultMap">
+  		select * from t_employee_information where mobile_no = #{mobileNo} and enabled = true and deleted = false
+  </select>
+  
+</mapper>

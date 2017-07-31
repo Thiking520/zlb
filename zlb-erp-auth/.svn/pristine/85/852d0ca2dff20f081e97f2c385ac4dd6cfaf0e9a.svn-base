@@ -1,0 +1,49 @@
+package com.zhilianbao.erp.auth.facade;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zhilianbao.erp.auth.service.operators.IOperatorService;
+import com.zhilianbao.erp.auth.service.operators.facade.IOperatorRestService;
+import com.zhilianbao.erp.auth.vo.operators.OperatorVo;
+import com.zhilianbao.erp.auth.vo.operators.facade.ParaOperatorNameRestVo;
+import com.zhilianbao.erp.auth.vo.operators.facade.ParaOperatorRestVo;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+
+@Service
+public class OperatorRestServiceImpl implements IOperatorRestService {
+	@Autowired
+	private IOperatorService operatorService;
+	
+	@Override
+	public ResponseValue<List<OperatorVo>> mulOperatorName(ParaOperatorRestVo paraOperatorRestVo) {
+		ResponseValue<List<OperatorVo>> responseValue=new ResponseValue<List<OperatorVo>>();
+		if(paraOperatorRestVo == null){
+			return responseValue.failure("多运营商信息，参数为空！");
+		}
+		List<OperatorVo> operatorList=operatorService.mulOperatorName(paraOperatorRestVo.getList());
+		return responseValue.success(operatorList);
+		
+	}
+
+	@Override
+	public ResponseValue<OperatorVo> operatorName(ParaOperatorNameRestVo paraOperatorNameRestVo) {
+		ResponseValue<OperatorVo> responseValue=new ResponseValue<OperatorVo>();
+		if(paraOperatorNameRestVo == null){
+			return responseValue.failure("运营商信息，参数为空！");
+		}
+		List<Long> list=new ArrayList<Long>();
+		list.add(paraOperatorNameRestVo.getOperatorId());
+		List<OperatorVo> operatorList=operatorService.mulOperatorName(list);
+		
+		OperatorVo operatorVo=null;
+		if(operatorList != null && operatorList.size()>0){
+			operatorVo=operatorList.get(0);
+		}
+		
+		return responseValue.success(operatorVo);
+	}
+}

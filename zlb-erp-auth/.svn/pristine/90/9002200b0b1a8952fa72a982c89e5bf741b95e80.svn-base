@@ -1,0 +1,48 @@
+package com.zhilianbao.erp.auth.impl.parameter;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.mapper.parameter.SystemDictMapper;
+import com.zhilianbao.erp.auth.mapper.parameter.SystemParamMapper;
+import com.zhilianbao.erp.common.entity.system.DictBean;
+import com.zhilianbao.erp.common.entity.system.ParamBean;
+import com.zhilianbao.erp.common.util.cache.DictCacheUtil;
+import com.zhilianbao.erp.common.util.cache.ParamCacheUtil;
+import com.zhilianbao.erp.common.util.springcontext.SpringContextHolder;
+
+/**
+ * 
+ * @company zhilianbao
+ * @author kuangzengye
+ * @date   2017年3月11日下午3:43:32
+ * @description:系统全局参数、数据字典初始化类
+ */
+public class ParamInit {
+
+		
+	
+	
+	
+	/**
+	 * 更新数据字典缓存
+	 * @return
+	 */
+	public static Integer updateDictCacheData(){
+		
+		SystemDictMapper systemDictMapper = SpringContextHolder.getBean("systemDictMapper");
+		List<DictBean> beans = systemDictMapper.getAllList();
+		return DictCacheUtil.updateCacheData(beans);
+	}
+	
+	/**
+	 * 更新全局参数缓存
+	 * @param beans
+	 * TODO 提取到非工具类中
+	 * @return
+	 */
+	public static Integer updateParamCacheData(){
+		SystemParamMapper systemParamMapper = SpringContextHolder.getBean("systemParamMapper");
+		List<ParamBean> beans = systemParamMapper.getAllList();
+		return ParamCacheUtil.updateCacheData(beans);
+	}
+}

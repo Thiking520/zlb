@@ -1,0 +1,230 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.goods.GoodsPropertyBean;
+import com.zhilianbao.erp.auth.entity.goods.GoodsPropertyItemBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsPropertyItemMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsPropertyListMapper;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsPropertyMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsPropertyService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPropertyItemVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPropertyListVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsPropertyVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 商品分类业务处理类
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月1日 下午3:39:47
+ */
+@Service
+@Transactional
+public class GoodsPropertyServiceImpl implements IGoodsPropertyService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsPropertyServiceImpl.class);
+	
+	@Autowired
+	private GoodsPropertyMapper goodsPropertyMapper;
+	@Autowired
+	private GoodsPropertyItemMapper goodsPropertyItemMapper;
+	@Autowired
+	private GoodsPropertyListMapper goodsPropertyListMapper;
+	
+	public ResponseResult<GoodsPropertyVo> queryListByPage(ViewSearchVo vo) {
+		ResponseResult<GoodsPropertyVo> rspResult = new ResponseResult<GoodsPropertyVo>();
+		try {
+			// 与mysql中的limit参数一致offset,limit
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize()); // 核心分页代码 开启分页查询，后面第一条查询语句会被分页
+			// 注意:如果有两条查询语句，第二条不会被分页
+			List<GoodsPropertyVo> list = goodsPropertyMapper.queryListByPage(vo);
+			if (Constants.ZERO == list.size()) {
+				return new ResponseResult<GoodsPropertyVo>(ResultEnum.EMPTY);
+			}
+			PageInfo<GoodsPropertyVo> page = new PageInfo<GoodsPropertyVo>(list);
+			long total = page.getTotal();// 获取数据库中的总条数
+			List<GoodsPropertyVo> pageList = page.getList();// 推荐使用这个获取结果集
+			
+			if (CollectionUtils.isEmpty(pageList)) {
+				return new ResponseResult<GoodsPropertyVo>(ResultEnum.EMPTY);
+			}
+            //分页必填的两个参数
+            rspResult.setTotal(total);
+			rspResult.setRows(pageList);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品属性】分页查询出错{}",vo,e);
+			return new ResponseResult<GoodsPropertyVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+	
+	@Override
+	public ResponseResult<GoodsPropertyVo> queryDetails(GoodsPropertyVo searchVo) {
+		ResponseResult<GoodsPropertyVo> rspResult = new ResponseResult<GoodsPropertyVo>();
+		try {
+			GoodsPropertyVo vo = goodsPropertyMapper.queryById(searchVo);
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品属性】详情出错，id={}",searchVo.getId(), e);
+			return new ResponseResult<GoodsPropertyVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsPropertyVo> addData(GoodsPropertyVo vo) {
+		ResponseResult<GoodsPropertyVo> rspResult = new ResponseResult<GoodsPropertyVo>();
+		try {
+			GoodsPropertyBean bean = new GoodsPropertyBean();
+			// 写主表
+			PropertyUtils.copyProperties(bean,vo);
+			bean.setPropertyName(vo.getPropertyName());
+			bean.setType(vo.getType());
+			goodsPropertyMapper.insertSelective(bean);
+			
+			// 写详情表
+			List<GoodsPropertyItemVo> itemList = vo.getItemList();
+			for(GoodsPropertyItemVo itemVo : itemList){
+				GoodsPropertyItemBean itemBean = new GoodsPropertyItemBean();
+				itemBean.setPropertyId(bean.getId());
+				itemBean.setPropertyValue(itemVo.getPropertyValue());
+				itemBean.setSortIndex(itemVo.getSortIndex());
+				itemBean.setCreator(vo.getCreator());
+				goodsPropertyItemMapper.insertSelective(itemBean);
+			}
+		} catch (Exception e) {
+			logger.error("【商品管理-商品属性】新增出错{}", vo, e);
+			// 回滚
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return new ResponseResult<GoodsPropertyVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsPropertyVo> deleteData(GoodsPropertyVo vo) {
+		ResponseResult<GoodsPropertyVo> rspResult = new ResponseResult<GoodsPropertyVo>();
+		try {
+			// 判断是否被引用
+			Long [] deleteIds = new Long[1];
+			deleteIds[0] = vo.getId();//现在是单个删除，以后可能批量删除
+			int count = goodsPropertyMapper.getCountByDeleteIds(deleteIds);
+			if(count > 0)
+				return new ResponseResult<GoodsPropertyVo>(ResultEnum.IN_USE);
+			
+			GoodsPropertyBean bean = new GoodsPropertyBean();
+			bean.setId(vo.getId());
+			bean.setDeleted(true);
+			goodsPropertyMapper.updateByPrimaryKeySelective(bean);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品属性】删除出错,id={}",vo.getId(), e);
+			return new ResponseResult<GoodsPropertyVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	/**
+	 * 判断删除的id是否被关联
+	 */
+	private boolean checkExists(Long linkedId, Long[] deleteIds){
+		for (int i = 0; i < deleteIds.length; i++) {
+			Long deleteId = deleteIds[i];
+			if(deleteId == linkedId){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@Override
+	public ResponseResult<GoodsPropertyVo> updateData(GoodsPropertyVo vo) {
+		ResponseResult<GoodsPropertyVo> rspResult = new ResponseResult<GoodsPropertyVo>();
+		try {
+			// 先判断删除的子项有没有被引用
+			Long[] deleteIds = vo.getDeleteIds();
+			if(deleteIds != null && deleteIds.length > 0){
+				List<GoodsPropertyListVo> list = goodsPropertyListMapper.getListByPropertyId(vo);
+				if(list != null && list.size() > 0){
+					for(GoodsPropertyListVo tmp : list){
+						//下拉框
+						if(tmp.getType() == 3){
+							if(!checkExists(Long.parseLong(tmp.getPropertyItemValue()), deleteIds))
+								return new ResponseResult<GoodsPropertyVo>(ResultEnum.IN_USE);
+						}
+						//多选框
+						else if(tmp.getType() == 2){
+							String itemValue = tmp.getPropertyItemValue();
+							if(!itemValue.equals(null)){
+								String[] itemValueArr = itemValue.split(",");
+								for (int i = 0; i < itemValueArr.length; i++) {
+									Long linkedId = Long.parseLong(itemValueArr[i]);
+									if(!checkExists(linkedId, deleteIds))
+										return new ResponseResult<GoodsPropertyVo>(ResultEnum.IN_USE);
+								}
+							}
+						}
+					}
+				}
+			}
+						
+			// 改主表
+			GoodsPropertyBean bean = new GoodsPropertyBean();
+			PropertyUtils.copyProperties(bean,vo);
+			bean.setPropertyName(vo.getPropertyName());
+			bean.setType(vo.getType());
+			goodsPropertyMapper.updateByPrimaryKeySelective(bean);
+			
+			// 详情表，可能insert，也可能update，也有可能delete
+			if(deleteIds != null && deleteIds.length > 0)
+				goodsPropertyItemMapper.deleteBatchByIds(deleteIds);
+			List<GoodsPropertyItemVo> itemList = vo.getItemList();
+			for(GoodsPropertyItemVo itemVo : itemList){
+				GoodsPropertyItemBean itemBean = new GoodsPropertyItemBean();
+				PropertyUtils.copyProperties(itemBean,itemVo);
+				if(itemBean.getId() == null){
+					itemBean.setPropertyId(bean.getId());
+					goodsPropertyItemMapper.insertSelective(itemBean);
+				}
+				else{
+					goodsPropertyItemMapper.updateByPrimaryKeySelective(itemBean);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("【商品管理-商品属性】修改出错{}",vo, e);
+			// 回滚
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return new ResponseResult<GoodsPropertyVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<GoodsPropertyVo> queryByGoodsId(GoodsVo vo) {
+		ResponseResult<GoodsPropertyVo> rspResult = new ResponseResult<GoodsPropertyVo>();
+		try {
+			List<GoodsPropertyVo> list = goodsPropertyMapper.queryByGoodsId(vo);
+			rspResult.setRows(list);
+		} catch (Exception e) {
+			logger.error("【商品管理-商品属性】根据商品id查商品属性出错，goodsId={}",vo.getId(), e);
+			return new ResponseResult<GoodsPropertyVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+}

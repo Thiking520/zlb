@@ -1,0 +1,13 @@
+package com.zhilianbao.erp.auth.service.goods;
+
+/**
+ * 单品
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月6日 下午2:44:15
+ */
+public interface IGoodsItemService {
+	
+	
+	
+}

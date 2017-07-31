@@ -1,0 +1,250 @@
+package com.zhilianbao.erp.auth.entity.goods;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+import com.zhilianbao.erp.common.util.LogBeanNoNullStyle;
+
+@Table(name = "t_goods_original")
+public class GoodsOriginalBean extends BaseBean implements Serializable {
+
+	private static final long serialVersionUID = 671606311057393022L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+	/**
+	 * 商品运营商Id
+	 */
+	@Column(name = "operator_id")
+	private Long operatorId;
+
+	/**
+	 * 商品名称
+	 */
+	@Column(name = "goods_name")
+	private String goodsName;
+	/**
+	 * 商品类型Id
+	 */
+	@Column(name = "goods_type")
+	private Long goodsType;
+	/**
+	 * 商品描述
+	 */
+	@Column(name = "goods_desc")
+	private String goodsDesc;
+	
+	/**
+	 * 商品单位值
+	 */
+	@Column(name = "unit_value")
+	private String unitValue;
+	
+	/**
+	 * 商品单位描述
+	 */
+	@Column(name = "unit_desc")
+	private String unitDesc;
+	
+	/**
+	 * 商品图片路径
+	 */
+	@Column(name = "img_url")
+	private String imgUrl;
+	
+	/**
+	 * 是否有推送数据到pms
+	 */
+	@Column(name = "is_synchronize")
+	private Integer isSynchronize;
+
+	
+	
+	
+	
+	/**
+	 * 获取商品Id
+	 * @return
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * 设置商品Id
+	 * @param id
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	/**
+	 * 获取运营商Id
+	 * 
+	 * @return
+	 */
+	public Long getOperatorId() {
+		return operatorId;
+	}
+	
+	/**
+	 * 设置运营商Id
+	 * @param 
+	 */
+	public void setOperatorId(Long operatorId) {
+		this.operatorId = operatorId;
+	}
+
+	/**
+	 * 获取商品名称
+	 * @return
+	 */
+	public String getGoodsName() {
+		return goodsName;
+	}
+
+	/**
+	 * 设置商品名称
+	 * @param 
+	 */
+	public void setGoodsName(String goodsName) {
+		this.goodsName = goodsName;
+	}
+
+	/**
+	 * 获取商品类型Id
+	 * @return
+	 */
+	public Long getGoodsType() {
+		return goodsType;
+	}
+
+	/**
+	 * 设置商品类型Id
+	 * @param goodsType
+	 */
+	public void setGoodsType(Long goodsType) {
+		this.goodsType = goodsType;
+	}
+
+	/**
+	 * 获取商品描述
+	 * 
+	 * @return
+	 */
+	public String getGoodsDesc() {
+		return goodsDesc;
+	}
+
+	/**
+	 * 设置商品描述
+	 * @param 
+	 */
+	public void setGoodsDesc(String goodsDesc) {
+		this.goodsDesc = goodsDesc;
+	}
+	
+	/**
+	 * @Title: getUnitValue 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: String    返回类型 
+	 * @Description:获取商品单位值
+	 */
+	public String getUnitValue() {
+		return unitValue;
+	}
+	
+	/**
+	 * @Title: setUnitValue 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: void    返回类型 
+	 * @Description:设置商品单位值
+	 */
+	public void setUnitValue(String unitValue) {
+		this.unitValue = unitValue;
+	}
+
+	/**
+	 * @Title: getUnitDesc 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: String    返回类型 
+	 * @Description:获取商品单位描述
+	 */
+	public String getUnitDesc() {
+		return unitDesc;
+	}
+
+	/**
+	 * @Title: setUnitDesc 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: void    返回类型 
+	 * @Description:设置商品单位描述
+	 */
+	public void setUnitDesc(String unitDesc) {
+		this.unitDesc = unitDesc;
+	}
+	
+	/**
+	 * 图片路径
+	 * @Title: getImgUrl 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: String    返回类型 
+	 * @Description:
+	 */
+	public String getImgUrl() {
+		return imgUrl;
+	}
+
+	/**
+	 * 图片路径
+	 * @Title: setImgUrl 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: void    返回类型 
+	 * @Description:
+	 */
+	public void setImgUrl(String imgUrl) {
+		this.imgUrl = imgUrl;
+	}
+
+	/**
+	 * 获取是否有推送数据到pms
+	 * 
+	 * @return
+	 */
+	public Integer getIsSynchronize() {
+		return isSynchronize;
+	}
+	
+	/**
+	 * @Title: setIsSynchronize 
+	 * @author: LiLinDong
+	 * @param: 
+	 * @return: void    返回类型 
+	 * @Description:设置是否有推送数据到pms
+	 */
+	public void setIsSynchronize(Integer isSynchronize) {
+		this.isSynchronize = isSynchronize;
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, new LogBeanNoNullStyle());
+	}
+
+	
+}

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.cars.CarsMapper" >
+
+	<resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.cars.CarsVo" >
+	    <!--
+	             如果是单表，这个可以不写  多表查询需要自己写，跟往常使用mybatis一样
+	    -->
+	     <id column="id" property="id" jdbcType="BIGINT" />
+	    <result column="car_id" property="carId" jdbcType="VARCHAR" />
+	    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+	    <result column="car_number" property="carNumber" jdbcType="VARCHAR" />
+	    <result column="enabled" property="enabled" jdbcType="INTEGER" />
+	    <result column="province" property="province" jdbcType="VARCHAR" />
+	    <result column="city" property="city" jdbcType="VARCHAR" />
+	    <result column="weight" property="weight" jdbcType="DECIMAL" />
+	    <result column="length" property="length" jdbcType="DECIMAL" />
+	    <result column="width" property="width" jdbcType="DECIMAL" />
+	    <result column="high" property="high" jdbcType="DECIMAL" />
+	    <result column="volume" property="volume" jdbcType="DECIMAL" />
+	    <result column="car_type" property="carType" jdbcType="VARCHAR" />
+	    <result column="region" property="region" jdbcType="VARCHAR" />
+	    <result column="self_support" property="selfSupport" jdbcType="VARCHAR" />
+	    <result column="is_transport_liquid" property="isTransportLiquid" jdbcType="INTEGER" />
+	    <result column="is_transport_freezing" property="isTransportFreezing" jdbcType="INTEGER" />
+	    <result column="is_transport_storage" property="isTransportStorage" jdbcType="INTEGER" />
+	    <result column="driver" property="driver" jdbcType="BIGINT" />
+	    <result column="custom1" property="custom1" jdbcType="VARCHAR" />
+	    <result column="custom2" property="custom2" jdbcType="VARCHAR" />
+	    <result column="describes" property="describes" jdbcType="VARCHAR" />
+	    <result column="creator" property="creator" jdbcType="BIGINT" />
+	    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+	    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	  </resultMap>
+
+  	<select id="findByPage" parameterType="map" resultMap="BaseResultMap">
+		SELECT
+			c.*, oc.company_name operatorName,
+			emp.cn_name driverName,
+			USER1.user_name creatorName,
+			USER2.user_name modifierName
+		FROM
+			t_cars c
+		LEFT JOIN t_operator_company oc ON c.operator_id = oc.company_key
+		LEFT JOIN t_employee_information emp ON c.driver = emp.id
+		LEFT JOIN t_user_admin USER1 ON c.creator = USER1.center_id
+		LEFT JOIN t_user_admin USER2 ON c.modifier = USER2.center_id
+		WHERE 
+			1 = 1
+		AND c.deleted = '0' and c.operator_id = #{vo.operatorId} 
+		<if test="vo !=null and vo.carId !=null and vo.carId !=''">
+			and c.car_id like CONCAT('%',#{vo.carId},'%') 
+		</if>
+	    <if test="vo !=null and vo.carNumber !=null and vo.carNumber !=''">
+			and c.car_number like CONCAT('%',#{vo.carNumber},'%') 
+		</if>
+		<if test="vo !=null and vo.driver !=null and vo.driver !=''">
+			and c.driver = #{vo.driver}
+		</if>
+		<if test="vo !=null and vo.carType !=null and vo.carType !=''">
+			and c.car_type = #{vo.carType}
+		</if>
+		<if test="vo !=null and vo.enabled !=null">
+			and c.enabled = #{vo.enabled}
+		</if>
+		<if test="vo !=null and vo.selfSupport !=null and vo.selfSupport !=''">
+			and c.self_support = #{vo.selfSupport}
+		</if>
+		<if test="vo !=null and vo.isTransportLiquid == 1">
+			and c.is_transport_liquid = #{vo.isTransportLiquid}
+		</if>
+		<if test="vo !=null and vo.isTransportFreezing == 1">
+			and c.is_transport_freezing = #{vo.isTransportFreezing}
+		</if>
+		<if test="vo !=null and vo.isTransportStorage == 1">
+			and c.is_transport_storage = #{vo.isTransportStorage}
+		</if>
+	</select>
+	<select id="queryCarDetail" parameterType="com.zhilianbao.erp.auth.entity.cars.CarsBean" resultMap="BaseResultMap">
+		SELECT
+			c.*, oc.company_name operatorName,
+			emp.cn_name driverName,
+			USER1.user_name creatorName,
+			USER2.user_name modifierName
+		FROM
+			t_cars c
+		LEFT JOIN t_operator_company oc ON c.operator_id = oc.company_key 
+		LEFT JOIN t_employee_information emp ON c.driver = emp.id 
+		LEFT JOIN t_user_admin USER1 ON c.creator = USER1.center_id 
+		LEFT JOIN t_user_admin USER2 ON c.modifier = USER2.center_id 
+		WHERE
+		<if test="id !=null and id !=''">
+			 c.id = #{id}
+		</if>
+	</select>
+	<select id="queryCarDetailsByCarId" parameterType="com.zhilianbao.erp.auth.entity.cars.CarsBean" resultMap="BaseResultMap">
+		select 
+			id,
+			car_id,
+  			operator_id,
+  			car_number,
+  			enabled,
+  			province,
+  			city,
+  			weight,
+  			length,
+  			width,
+  			high,
+  			volume,
+  			car_type,
+  			region,
+  			self_support,
+  			is_transport_liquid,
+  			is_transport_freezing,
+  			is_transport_storage,
+  			driver,
+  			custom1,
+  			custom2,
+  			describes,
+  			creator,
+  			create_time,
+  			modifier,
+  			update_time
+		 from 
+		 t_cars where 1=1
+		<if test="carId !=null and carId !=''">
+			and car_id = #{carId}
+		</if>
+		<if test="operatorId !=null and operatorId !=''">
+			and operator_id = #{operatorId}
+		</if>
+	</select>
+  	<!-- <insert id="addCar" parameterType="carsBean">
+  		insert into t_cars(
+  			car_id,
+  			operator_id,
+  			car_number,
+  			enabled,
+  			province,
+  			city,
+  			weight,
+  			length,
+  			width,
+  			high,
+  			volume,
+  			car_type,
+  			region,
+  			self_support,
+  			is_transport_liquid,
+  			is_transport_freezing,
+  			is_transport_storage,
+  			driver,
+  			describes
+  		)values(
+  			'${carId}', 
+  			'${operatorId}',
+  			'${carNumber}',
+  			'${enabled}',
+  			'${province}',
+  			'${city}',
+  			'${weight}',
+  			'${length}',
+  			'${width}',
+  			'${high}',
+  			'${volume}',
+  			'${carType}',
+  			'${region}',
+  			'${selfSupport}',
+  			'${isTransportLiquid}',
+  			'${isTransportFreezing}',
+  			'${isTransportStorage}',
+  			'${driver}',
+  			'${describes}'
+  		);
+  	</insert> -->
+    <select id="findMaxCarId" resultType="String">
+		select max(car_id) from t_cars 
+	</select>
+  
+  
+  
+  
+</mapper>

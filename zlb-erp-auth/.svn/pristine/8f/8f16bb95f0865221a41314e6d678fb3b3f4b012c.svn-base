@@ -1,0 +1,21 @@
+package com.zhilianbao.erp.auth.vo.goods.facade;
+
+import java.util.List;
+
+import com.zhilianbao.erp.common.vo.BaseRestVo;
+
+public class ReqGoodsRestVo extends BaseRestVo {
+
+	private static final long serialVersionUID = 1L;
+	
+	private List<String> list;
+
+	public List<String> getList() {
+		return list;
+	}
+
+	public void setList(List<String> list) {
+		this.list = list;
+	}
+	
+}

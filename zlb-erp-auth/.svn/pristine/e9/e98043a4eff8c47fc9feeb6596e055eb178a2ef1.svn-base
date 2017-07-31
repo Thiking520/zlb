@@ -1,0 +1,22 @@
+package com.zhilianbao.erp.auth.mapper.employee;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.employee.EmployeeAccountsListBean;
+import com.zhilianbao.erp.auth.vo.employee.EmployeeAccountsListVo;
+
+import tk.mybatis.mapper.common.Mapper;
+
+public interface EmployeeAccountsListMapper extends Mapper<EmployeeAccountsListBean> {
+
+	List<EmployeeAccountsListVo> findByAccount(EmployeeAccountsListVo eaListVo);
+
+	EmployeeAccountsListVo findById(EmployeeAccountsListVo userRoleVo);
+
+	/**
+	 * 通过员工帐号查找员工绑定关系
+	 * @param eaListVo
+	 * @return
+	 */
+	EmployeeAccountsListVo findByUserName(EmployeeAccountsListVo eaListVo);
+}

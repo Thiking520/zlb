@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsPriceMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsPriceVo" >
+     <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_item_id" property="goodsItemId" jdbcType="BIGINT" />
+    <result column="goods_sku_id" property="goodsSkuId" jdbcType="BIGINT" />
+    <result column="goods_collection_id" property="goodsCollectionId" jdbcType="BIGINT" />
+    <result column="specification" property="specification" jdbcType="BIT" />
+    <result column="specification_type" property="specificationType" jdbcType="BIT" />
+    <result column="suggest_price" property="suggestPrice" jdbcType="DECIMAL" />
+    <result column="mall_price" property="mallPrice" jdbcType="DECIMAL" />
+    <result column="store_price" property="storePrice" jdbcType="DECIMAL" />
+    <result column="company_price" property="companyPrice" jdbcType="DECIMAL" />
+    <result column="proxy_price" property="proxyPrice" jdbcType="DECIMAL" />
+    <result column="cost_price" property="costPrice" jdbcType="DECIMAL" />
+    <result column="purchase_price" property="purchasePrice" jdbcType="DECIMAL" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="BIT" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, goods_item_id, goods_sku_id, goods_collection_id, specification, specification_type, 
+    suggest_price, mall_price, store_price, company_price, proxy_price, cost_price, purchase_price, 
+    create_time, creator, update_time, modifier, deleted
+  </sql>
+  
+  <!-- 根据goodsId获取价格信息 -->
+  <select id="getPriceByGoodsId" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> FROM t_goods_price g
+  	where 1=1 AND g.deleted = 0
+  	AND g.goods_item_id = #{goodsItemId}
+  </select>
+</mapper>

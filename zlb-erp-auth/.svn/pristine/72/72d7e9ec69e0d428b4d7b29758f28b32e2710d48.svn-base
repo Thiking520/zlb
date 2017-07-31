@@ -1,0 +1,8 @@
+package com.zhilianbao.erp.auth.server;
+
+public class AuthServer {
+	public static void main(String[] args) {
+		com.alibaba.dubbo.container.Main.main(args);
+
+	}
+}

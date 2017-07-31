@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.operators.OperatorMapper" >
+  <resultMap id="operatorVoMap" type="com.zhilianbao.erp.auth.vo.operators.OperatorVo" >
+    
+    <id column="id" property="id"/>
+    <result column="company_name" property="companyName"/>
+    <result column="company_full_name" property="companyFullName"/>
+    <result column="customer_mobile_no" property="customerMobileNo"/>
+    <result column="customer_email" property="customerEmail"/>
+    <result column="company_address" property="companyAddress"/>
+    <result column="enabled" property="enabled"/>
+    <result column="creator" property="creator"/>
+    <result column="modifier" property="modifier"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="company_code" property="companyCode"/>
+    <result column="company_ext_name" property="companyExtName"/>
+    <result column="customer_contact" property="customerContact"/>
+    <result column="reconciliation_contact" property="reconciliationContact"/>
+    <result column="site_url" property="siteUrl"/>
+    <result column="remark" property="remark"/>
+    <result column="reconciliation_mobile_no" property="reconciliationMobileNo"/>
+    <result column="reconciliation_email" property="reconciliationEmail"/>
+    
+    <result column="creatorName" property="creatorName"/>
+    <result column="modifierName" property="modifierName"/>
+    
+    <result column="enabledName" property="enabledName"/>
+    
+    <result column="company_key" property="companyKey"/>
+    
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    toc.id, toc.company_name, toc.company_full_name, toc.customer_mobile_no, toc.customer_email, 
+    toc.company_address,toc.enabled, toc.creator, toc.modifier, toc.create_time, toc.update_time, 
+    toc.deleted,toc.company_code, toc.company_ext_name, 
+    toc.customer_contact, toc.reconciliation_contact, toc.site_url, toc.remark, 
+    toc.reconciliation_mobile_no,toc.reconciliation_email,toc.company_key
+  </sql>
+  
+  <select id="qryOperator" parameterType="paraOperatorVo" resultMap="operatorVoMap">
+      select distinct
+          <include refid="Base_Column_List" />
+          ,tua.user_name as creatorName,tuaA.user_name as modifierName,tsd.dict_desc as enabledName   
+      from 
+          t_operator_company toc 
+          left join t_user_admin tua on toc.creator=tua.center_id 
+          left join t_user_admin tuaA on toc.modifier=tuaA.center_id 
+          left join t_system_dict tsd on tsd.operator_id=toc.company_key 
+                    and tsd.dict_value=toc.enabled and tsd.dict_type=#{dictType}
+      <where>
+          <if test="companyCode != null and companyCode != ''">
+              and toc.company_code like CONCAT('%',#{companyCode},'%') 
+          </if>
+          <if test="companyName != null and companyName != ''">
+              and toc.company_name like CONCAT('%',#{companyName},'%')
+          </if>
+          <if test="companyFullName != null and companyFullName != ''">
+              and toc.company_full_name like CONCAT('%',#{companyFullName},'%')
+          </if>
+          <if test="enabled != null and enabled &gt;=0">
+              and toc.enabled=#{enabled}
+          </if>
+          <if test="operatorId != null and operatorId !=''">
+          		and toc.company_key = #{operatorId}
+          </if>
+      </where>
+      ORDER BY toc.create_time desc
+  </select>
+  
+  <select id="mulOperatorName" parameterType="list" resultType="operatorVo">
+      select toc.id as id,
+             toc.company_name as companyName,
+             toc.company_full_name as companyFullName,
+             toc.company_ext_name as companyExtName,
+             toc.company_address as companyAddress,
+             toc.company_key as companyKey
+      from 
+      t_operator_company toc
+      <where>
+          <if test="list != null and list.size()>0">
+              toc.company_key in 
+	          <foreach collection="list" item="item" open="(" close=")" separator="," index="index">
+	              #{item}
+	          </foreach>
+          </if>
+      </where>
+  </select>
+  
+</mapper>

@@ -1,0 +1,203 @@
+package com.zhilianbao.erp.auth.entity.goods;
+
+import java.io.Serializable;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.zhilianbao.erp.common.entity.BaseBean;
+import com.zhilianbao.erp.common.util.LogBeanNoNullStyle;
+
+@Table(name = "t_goods_type")
+public class GoodsTypeBean extends BaseBean implements Serializable{
+	private static final long serialVersionUID = 671606311057393022L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long operatorId;
+    private Long parentId;
+    private String typeName;
+    private String typeDesc;
+    private Integer sortIndex;
+    private Integer enabled;
+    private String imageUrl;
+	
+	/** 
+	 * 获取
+	 * @return id 
+	 */
+	public Long getId() {
+		return id;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param id 
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return operatorId 
+	 */
+	public Long getOperatorId() {
+		return operatorId;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param operatorId 
+	 */
+	public void setOperatorId(Long operatorId) {
+		this.operatorId = operatorId;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return parentId 
+	 */
+	public Long getParentId() {
+		return parentId;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param parentId 
+	 */
+	public void setParentId(Long parentId) {
+		this.parentId = parentId;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return typeName 
+	 */
+	public String getTypeName() {
+		return typeName;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param typeName 
+	 */
+	public void setTypeName(String typeName) {
+		this.typeName = typeName;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return typeDesc 
+	 */
+	public String getTypeDesc() {
+		return typeDesc;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param typeDesc 
+	 */
+	public void setTypeDesc(String typeDesc) {
+		this.typeDesc = typeDesc;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return sortIndex 
+	 */
+	public Integer getSortIndex() {
+		return sortIndex;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param sortIndex 
+	 */
+	public void setSortIndex(Integer sortIndex) {
+		this.sortIndex = sortIndex;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return enabled 
+	 */
+	public Integer getEnabled() {
+		return enabled;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param enabled 
+	 */
+	public void setEnabled(Integer enabled) {
+		this.enabled = enabled;
+	}
+
+
+
+	/** 
+	 * 获取
+	 * @return imageUrl 
+	 */
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+
+
+	/** 
+	 * 设置
+	 * @param imageUrl 
+	 */
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+
+
+	/** 
+	 * 获取
+	 * @return serialversionuid 
+	 */
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, new LogBeanNoNullStyle());
+	}
+}

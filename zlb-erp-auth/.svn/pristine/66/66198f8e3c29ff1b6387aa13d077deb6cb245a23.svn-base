@@ -1,0 +1,19 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import com.zhilianbao.erp.auth.entity.goods.CodeRuleItemBean;
+import com.zhilianbao.erp.auth.vo.goods.CodeRuleItemVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 编码规则项
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:36:13
+ */
+public interface CodeRuleItemMapper extends BaseMapper<CodeRuleItemBean> {
+	
+	List<CodeRuleItemVo> queryListByPage(ViewSearchVo vo);
+}

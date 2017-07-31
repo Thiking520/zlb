@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsMaterialListMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsMaterialListVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="goods_id" property="goodsId" jdbcType="BIGINT" />
+    <result column="material_id" property="materialId" jdbcType="BIGINT" />
+    <result column="type" property="type" jdbcType="BIT" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <resultMap id="MaterialListResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsMaterialListVo" >
+  	<id column="id" property="id" jdbcType="BIGINT" />
+  	<result column="file_url" property="fileUrl" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, goods_id, material_id, type, sort_index
+  </sql>
+  
+  <!-- 根据goodsId获取商品相册 -->
+  <select id="getMaterialListByGoodsId" resultMap="MaterialListResultMap">
+  	SELECT list.id, list.type, material.file_url from t_goods_material_list list
+	LEFT JOIN t_goods_material material on list.material_id = material.id
+	where list.goods_id = #{goodsId}
+	<if test="type != null and type != '' ">
+  	 	AND list.type = #{type}
+  	</if>
+  </select>
+  
+</mapper>

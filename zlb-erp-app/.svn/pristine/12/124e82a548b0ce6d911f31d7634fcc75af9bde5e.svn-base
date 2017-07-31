@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo 
+	http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+	
+	
+	<!-- 用户账号相关-->
+	<dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.user.IUserAccountService" protocol="rest" ref="userAccountServiceImpl"/>
+	
+	<dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.info.IAppBaseInfoService" protocol="rest" ref="appBaseInfoServiceImpl"/>
+	<!-- 调度管理：派车相关-->
+	<dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.dispatchvehicle.IDispatchVehicleService" protocol="rest" ref="dispatchvehicleServiceImpl"/>
+
+    <!--运单管理-->
+    <dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.waybill.IWayBillService" protocol="rest" ref="wayBillServiceImpl"/>
+    <!--物流管理-->
+    <dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.logistics.ILogisticsService" protocol="rest" ref="logisticsServiceImpl"/>
+	<!--短信管理-->
+    <dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.sms.IPdaSmsService" protocol="rest" ref="pdaSmsServiceImpl"/>
+    <!--短信状态报告回调地址-->
+    <dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.sms.ISmsStateReportService" protocol="rest" ref="smsStateReportServiceImpl"/>
+	<!--WMS拣货-->
+	<dubbo:service filter="authInterceptor" interface="com.zhilianbao.erp.app.service.wms.IPickService" protocol="rest" ref="pickServiceImpl"/>
+</beans>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.CodeRuleMapper" >
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.CodeRuleVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="code_type" property="codeType" jdbcType="SMALLINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="item_id" property="itemId" jdbcType="BIGINT" />
+    <result column="input_value" property="inputValue" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+    <result column="enabled" property="enabled" jdbcType="BIT" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="deleted" property="deleted" jdbcType="BIT" />
+    
+    <!-- t_code_rule_item -->
+    <result column="rule_item_name" property="ruleItemName" jdbcType="VARCHAR" />
+    <result column="rule_item_value" property="ruleItemValue" jdbcType="VARCHAR" />
+    <result column="key_type" property="keyType" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, code_type, operator_id, item_id, input_value, sort_index, enabled, create_time, creator, 
+    update_time, modifier, deleted
+  </sql>
+  
+  
+  <!-- 分页查询 -->
+  <select id="queryListByPage" resultMap="BaseResultMap">
+  	SELECT rule.*, item.rule_item_name, item.rule_item_value, item.key_type FROM (SELECT <include refid="Base_Column_List" /> FROM t_code_rule) rule
+  	left join t_code_rule_item item on rule.item_id = item.id
+  	where 1=1
+  	<if test="searchType != null and searchType != '' ">
+  		AND rule.code_type = #{searchType}
+  	</if>
+  	AND rule.deleted = 0 and rule.operator_id = #{operatorId}
+  	order by rule.sort_index asc
+  </select>
+  
+  
+  <!-- 批量删除 -->
+  <update id="deleteBatchByIds">
+  	update t_code_rule set deleted = true where id in 
+   	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+  <!-- 根据运营商id和编码类型获取配置的数据 -->
+  <select id="queryByCodeType" resultMap="BaseResultMap">
+  	SELECT rule.*, item.rule_item_name, item.rule_item_value, item.key_type FROM (SELECT <include refid="Base_Column_List" /> FROM t_code_rule) rule
+  	left join t_code_rule_item item on rule.item_id = item.id
+  	where rule.deleted = 0 and rule.enabled = 1 and rule.code_type = #{codeType} and rule.operator_id = #{operatorId} 
+  	order by rule.sort_index asc
+  </select>
+</mapper>

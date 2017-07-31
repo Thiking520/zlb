@@ -1,0 +1,221 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.goods.CodeRuleBean;
+import com.zhilianbao.erp.auth.mapper.goods.CodeRuleMapper;
+import com.zhilianbao.erp.auth.service.goods.ICodeRuleService;
+import com.zhilianbao.erp.auth.vo.goods.CodeRuleVo;
+import com.zhilianbao.erp.auth.vo.goods.facade.ReqCodeRuleRestVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ResponseValue;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+import tk.mybatis.mapper.entity.Example;
+@Service
+@Transactional
+public class CodeRuleServiceImpl implements ICodeRuleService {
+	
+	private static Logger logger=LogManager.getLogger(CodeRuleServiceImpl.class);
+	
+	@Autowired
+	private CodeRuleMapper codeRuleMapper;
+	
+	public ResponseResult<Page<CodeRuleVo>> queryListByPage(ViewSearchVo vo) {
+		ResponseResult<Page<CodeRuleVo>> rspResult = new ResponseResult<Page<CodeRuleVo>>();
+		Page<CodeRuleVo> page = new Page<CodeRuleVo>();
+		rspResult.setData(page);
+		try {
+			// 与mysql中的limit参数一致offset,limit
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize()); // 核心分页代码 开启分页查询，后面第一条查询语句会被分页
+			// 注意:如果有两条查询语句，第二条不会被分页
+			List<CodeRuleVo> list = codeRuleMapper.queryListByPage(vo);
+			if (Constants.ZERO == list.size()) {
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+			PageInfo<CodeRuleVo> pageInfo = new PageInfo<CodeRuleVo>(list);
+			long total = pageInfo.getTotal();// 获取数据库中的总条数
+			List<CodeRuleVo> resultList = pageInfo.getList();// 推荐使用这个获取结果集
+			
+			if (CollectionUtils.isEmpty(resultList)) {
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+            //分页必填的两个参数
+			page.setTotal(total);
+			page.setRows(resultList);
+			return rspResult.success(page);
+		} catch (Exception e) {
+			logger.error("【公共数据-编码规则】分页查询出错{}",vo,e);
+			return rspResult.err();
+		}
+	}
+
+	@Override
+	public ResponseResult<CodeRuleVo> queryDetails(CodeRuleVo paramVo) {
+		ResponseResult<CodeRuleVo> rspResult = new ResponseResult<CodeRuleVo>();
+		try {
+			CodeRuleBean paramBean = new CodeRuleBean();
+			paramBean.setId(paramVo.getId());
+			CodeRuleBean bean = codeRuleMapper.selectByPrimaryKey(paramBean);
+			CodeRuleVo vo = new CodeRuleVo();
+			PropertyUtils.copyProperties(vo, bean);
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("【公共数据-编码规则】详情出错，id={}",paramVo.getId(), e);
+			return new ResponseResult<CodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+
+	}
+
+	@Override
+	public ResponseResult<CodeRuleVo> addData(CodeRuleVo vo) {
+		ResponseResult<CodeRuleVo> rspResult = new ResponseResult<CodeRuleVo>();
+		try {
+			CodeRuleBean goods = new CodeRuleBean();
+			PropertyUtils.copyProperties(goods,vo);
+			codeRuleMapper.insertSelective(goods);
+		} catch (Exception e) {
+			logger.error("【公共数据-编码规则】新增出错{}", vo, e);
+			return new ResponseResult<CodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<CodeRuleVo> deleteData(CodeRuleVo vo) {
+		ResponseResult<CodeRuleVo> rspResult = new ResponseResult<CodeRuleVo>();
+		try {
+			CodeRuleBean goods = new CodeRuleBean();
+			goods.setId(vo.getId());
+			goods.setDeleted(true);
+			codeRuleMapper.updateByPrimaryKeySelective(goods);
+		} catch (Exception e) {
+			logger.error("【公共数据-编码规则】删除出错,id={}",vo.getId(), e);
+			return new ResponseResult<CodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<CodeRuleVo> updateData(List<CodeRuleVo> voList) {
+		ResponseResult<CodeRuleVo> rspResult = new ResponseResult<CodeRuleVo>();
+		try {
+			//删除
+			if(voList != null && voList.size() > 0){
+				CodeRuleVo tmpVo = voList.get(0);
+				
+				//判断是否已经启用
+				Example example = new Example(CodeRuleBean.class);
+				example.createCriteria().andCondition(" enabled = 1 and code_type = " + tmpVo.getCodeType() + " and operator_id = " + tmpVo.getOperatorId());
+				int count = codeRuleMapper.selectCountByExample(example);
+				if(count > 0)
+					return new ResponseResult<CodeRuleVo>(ResultEnum.NOT_ALLOWED_UPDATE);
+				
+				Long[] deleteIds = tmpVo.getDeleteIds();
+				if(deleteIds.length > 0){
+					codeRuleMapper.deleteBatchByIds(deleteIds);
+				}
+			}
+			
+			for(CodeRuleVo vo : voList){
+				CodeRuleBean bean = new CodeRuleBean();
+				PropertyUtils.copyProperties(bean, vo);
+				//新增
+				if(bean.getId() == null)
+					codeRuleMapper.insertSelective(bean);
+				//修改
+				else 
+					codeRuleMapper.updateByPrimaryKeySelective(bean);
+			}
+		} catch (Exception e) {
+			logger.error("【公共数据-编码规则】修改出错{}",voList, e);
+			// 回滚
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return new ResponseResult<CodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+	@Override
+	public ResponseResult<CodeRuleVo> enabledData(CodeRuleVo vo) {
+		ResponseResult<CodeRuleVo> rspResult = new ResponseResult<CodeRuleVo>();
+		try {
+			CodeRuleBean codeRuleBean = new CodeRuleBean();
+			codeRuleBean.setEnabled(1);
+		    
+			Example example = new Example(CodeRuleBean.class);
+			example.createCriteria().andCondition("code_type = " + vo.getCodeType() + " and operator_id = " + vo.getOperatorId());
+			codeRuleMapper.updateByExampleSelective(codeRuleBean, example);
+		} catch (Exception e) {
+			logger.error("【公共数据-编码规则】启用出错{}", vo, e);
+			return new ResponseResult<CodeRuleVo>(ResultEnum.SYS_ERR);
+		}
+		
+		return rspResult;
+	}
+		
+	@Override
+	public ResponseValue<String> getCodeNO(ReqCodeRuleRestVo reqCodeRuleRestVo) {
+		ResponseValue<String> responseValue=new ResponseValue<String>();
+		// 查询配置
+		List<CodeRuleVo> list = codeRuleMapper.queryByCodeType(reqCodeRuleRestVo);
+		if(list == null || list.size() <= 0)
+			return responseValue.failure(ResultEnum.CODE_RULE_NULL);
+		StringBuffer codeNo = new StringBuffer();
+		String date = new SimpleDateFormat("yyyyMMdd", Locale.CHINA).format(Calendar.getInstance().getTime());
+		for(CodeRuleVo codeRuleVo : list){
+			Integer keyType = codeRuleVo.getKeyType();
+			// 前缀
+			if(keyType == 1)
+				codeNo.append(codeRuleVo.getInputValue());
+			// 运营商
+			else if(keyType == 2)
+				codeNo.append(reqCodeRuleRestVo.getOperatorId());
+			// 年份
+			else if(keyType == 3)
+				codeNo.append(date.substring(0,4));
+			// 月份
+			else if(keyType == 4)
+				codeNo.append(date.substring(4,6));
+			// 日期
+			else if(keyType == 5)
+				codeNo.append(date.substring(6,8));
+			// 序号
+			else if(keyType == 6)
+				codeNo.append(new Random().nextInt(999999999));//9位数的随机数
+			// 订单来源
+			else if(keyType == 7)
+				codeNo.append(reqCodeRuleRestVo.getSource());
+			// 支付方式
+			else if(keyType == 8)
+				codeNo.append(reqCodeRuleRestVo.getTradePlatform());
+			else 
+				return responseValue.failure(ResultEnum.CODE_RULE_KEY_TYPE_NULL);
+		}
+		responseValue.success();
+		responseValue.setData(codeNo.toString());
+		return responseValue;
+	}
+
+
+}

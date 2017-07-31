@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsSkuMapper" >
+
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsSkuVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+    <result column="is_not_null" property="isNotNull" jdbcType="SMALLINT" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="BIT" />
+    
+    <collection property="childList" javaType="ArrayList" column="id" ofType="com.zhilianbao.erp.auth.vo.goods.GoodsSkuVo" select="getChildList" >
+	</collection>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, operator_id, parent_id, sku_name, is_not_null, sort_index, create_time, creator, update_time, 
+    modifier, deleted
+  </sql>
+
+  <!-- 分页查询 -->
+  <select id="queryListByPage" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> from t_goods_sku sku
+  	where sku.deleted = 0 and sku.parent_id = 0 and sku.operator_id = #{operatorId}
+  	<if test="searchKeyword != null and searchKeyword != '' ">
+  	 AND sku.sku_name like concat('%',#{searchKeyword},'%')
+  	</if>
+  	ORDER BY sku.create_time desc
+  </select>	
+  <select id="getChildList" resultMap="BaseResultMap"  >
+	SELECT <include refid="Base_Column_List" /> from t_goods_sku skuChild
+	where skuChild.parent_id = #{id} and skuChild.deleted = 0 ORDER BY skuChild.sort_index asc
+  </select>
+  
+  <!-- 查询所有，以树形结构展示 -->
+  <select id="initTree" resultMap="BaseResultMap">
+	SELECT <include refid="Base_Column_List" /> from t_goods_sku sku
+  	where sku.deleted = 0 and sku.operator_id = #{operatorId}
+  	ORDER BY sku.sort_index asc
+  </select>
+  
+  <!-- 根据id查询详情 -->
+  <select id="queryById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+	SELECT <include refid="Base_Column_List" /> from t_goods_sku sku
+  	where sku.deleted = 0 and sku.id = #{id} and sku.operator_id = #{operatorId}
+  </select>
+  
+  <!-- 商品规格，删除操作时，查询要删除的t_goods_sku有没有被引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+  		SELECT COUNT(*) from t_goods_sku_recode recode where recode.sku_id in 
+  		<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+	   		#{item}
+	   	</foreach>
+  </select>
+  
+  <!-- 批量删除 -->
+  <update id="deleteBatchByIds">
+  	update t_goods_sku set deleted = true where id in 
+   	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+  <!-- 根据父id获取所有子项 -->
+  <select id="getListByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+	SELECT <include refid="Base_Column_List" /> from t_goods_sku sku
+  	where sku.deleted = 0 and sku.parent_id = #{parentId} and sku.operator_id = #{operatorId}
+  	ORDER BY sku.sort_index desc
+  </select>
+  
+  <!-- 根据运营商id获取所有规格信息 -->
+  <select id="queryAll" resultMap="BaseResultMap">
+  	SELECT <include refid="Base_Column_List" /> from t_goods_sku sku
+  	where sku.deleted = 0 and sku.parent_id = 0 and sku.operator_id = #{operatorId}
+  	ORDER BY sku.create_time desc
+  </select>
+  
+</mapper>

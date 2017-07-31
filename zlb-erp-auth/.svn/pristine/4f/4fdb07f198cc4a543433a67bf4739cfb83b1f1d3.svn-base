@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilianbao.erp.auth.mapper.goods.GoodsPropertyItemMapper" >
+
+  <resultMap id="BaseResultMap" type="com.zhilianbao.erp.auth.vo.goods.GoodsPropertyItemVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="property_id" property="propertyId" jdbcType="BIGINT" />
+    <result column="property_value" property="propertyValue" jdbcType="VARCHAR" />
+    <result column="sort_index" property="sortIndex" jdbcType="INTEGER" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, property_id, property_value, sort_index, create_time, creator, update_time, modifier, 
+    deleted
+  </sql>
+  
+  <!-- 批量删除 -->
+  <update id="deleteBatchByIds">
+  	update t_goods_property_item set deleted = true where id in 
+   	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+  </update>
+  
+   <!-- 商品属性，删除操作时，查询要删除的t_goods_property有没有被引用 -->
+  <select id="getCountByDeleteIds" resultType="Integer">
+  	SELECT SUM(a) as num from (
+	SELECT COUNT(*) as a from t_goods_property_item item where item.property_id in
+	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+	UNION ALL
+	SELECT COUNT(*) as a from t_goods_property_list list where list.property_id in 
+	<foreach collection="deleteIds" item="item" index="index" open="(" separator="," close=")" >
+   		#{item}
+   	</foreach>
+	) as tmp
+  </select>
+  
+</mapper>

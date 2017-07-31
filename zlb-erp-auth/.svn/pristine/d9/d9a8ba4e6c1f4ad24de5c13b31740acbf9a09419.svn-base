@@ -1,0 +1,86 @@
+package com.zhilianbao.erp.auth.impl.goods;
+
+
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsMaterialListBean;
+import com.zhilianbao.erp.auth.mapper.goods.GoodsMaterialListMapper;
+import com.zhilianbao.erp.auth.service.goods.IGoodsMaterialListService;
+import com.zhilianbao.erp.auth.vo.goods.GoodsMaterialListVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.vo.Page;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+
+/**
+ * 商品与商品素材中间表
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月10日 上午10:41:07
+ */
+@Service
+@Transactional
+public class GoodsMaterialListServiceImpl implements IGoodsMaterialListService {
+	
+	private static Logger logger=LogManager.getLogger(GoodsMaterialListServiceImpl.class);
+	
+	@Autowired
+	private GoodsMaterialListMapper goodsMaterialListMapper;
+	
+	public ResponseResult<Page<GoodsMaterialListVo>> getMaterialListByGoodsId(GoodsMaterialListVo vo) {
+		ResponseResult<Page<GoodsMaterialListVo>> rspResult = new ResponseResult<Page<GoodsMaterialListVo>>();
+		Page<GoodsMaterialListVo> page = new Page<GoodsMaterialListVo>();
+		try {
+			List<GoodsMaterialListVo> list = goodsMaterialListMapper.getMaterialListByGoodsId(vo);
+			if (Constants.ZERO == list.size()) {
+				return rspResult.failure(ResultEnum.EMPTY);
+			}
+			page.setTotal(Long.parseLong(String.valueOf(list.size())));
+			page.setRows(list);
+			return rspResult.success(page);
+		} catch (Exception e) {
+			logger.error("【商品资料管理-商品相册or商品详情】根据商品id查属性集合出错{}",vo,e);
+			return rspResult.err();
+		}
+	}
+	
+	@Override
+	public ResponseResult<GoodsMaterialListVo> updateData(List<GoodsMaterialListVo> voList) {
+		ResponseResult<GoodsMaterialListVo> rspResult = new ResponseResult<GoodsMaterialListVo>();
+		try {
+			//再insert
+			for(GoodsMaterialListVo vo : voList){
+				GoodsMaterialListBean bean = new GoodsMaterialListBean();
+				PropertyUtils.copyProperties(bean, vo);
+				goodsMaterialListMapper.insertSelective(bean);
+			}
+		} catch (Exception e) {
+			logger.error("【商品资料管理-商品相册or商品详情】修改出错{}",voList, e);
+			return rspResult.err();
+		}
+		return rspResult.success();
+	}
+
+	@Override
+	public ResponseResult<GoodsMaterialListVo> deleteData(GoodsMaterialListVo vo) {
+		ResponseResult<GoodsMaterialListVo> rspResult = new ResponseResult<GoodsMaterialListVo>();
+		try {
+			//现在是单个删除，以后可能批量删除
+			Long [] deleteIds = new Long[1];
+			deleteIds[0] = vo.getId();
+			if(deleteIds != null && deleteIds.length > 0)
+				goodsMaterialListMapper.deleteBatchByIds(deleteIds);
+		} catch (Exception e) {
+			logger.error("【商品资料管理-商品相册or商品详情】删除出错{}",vo, e);
+			return new ResponseResult<GoodsMaterialListVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+}

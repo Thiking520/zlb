@@ -1,0 +1,265 @@
+package com.zhilianbao.erp.auth.impl.parameter;
+
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.zhilianbao.erp.auth.entity.parameter.SystemParamBean;
+import com.zhilianbao.erp.auth.mapper.parameter.SystemParamMapper;
+import com.zhilianbao.erp.auth.service.parameter.ISystemParamService;
+import com.zhilianbao.erp.auth.vo.parameter.SystemParamVo;
+import com.zhilianbao.erp.common.constant.Constants;
+import com.zhilianbao.erp.common.constant.ResultEnum;
+import com.zhilianbao.erp.common.entity.system.ParamBean;
+import com.zhilianbao.erp.common.util.cache.ParamCacheUtil;
+import com.zhilianbao.erp.common.vo.ResponseResult;
+import com.zhilianbao.erp.common.vo.ViewSearchVo;
+
+/**
+ * 
+ * @company zhilianbao
+ * @author kuangzengye
+ * @date   2017年3月11日下午3:42:53
+ * @description:系统全局参数实现类
+ */
+@Service
+public class SystemParamServiceImpl implements ISystemParamService {
+	
+	private static final Logger logger=LogManager.getLogger(SystemParamServiceImpl.class);
+	
+	@Autowired
+	private SystemParamMapper systemParamMapper;
+	
+	@Override
+	public ResponseResult<SystemParamVo> getSystemParamById(Long id) {
+		ResponseResult<SystemParamVo> rspResult = new ResponseResult<SystemParamVo>();
+		try {
+			SystemParamVo vo = new SystemParamVo();
+			if(id == null){
+				rspResult = new ResponseResult<SystemParamVo>(ResultEnum.EMPTY);
+				rspResult.setData(vo);
+				return rspResult;
+			}
+			SystemParamBean bean = systemParamMapper.selectByPrimaryKey(id);
+			PropertyUtils.copyProperties(vo, bean);
+			rspResult.setData(vo);
+		} catch (Exception e) {
+			logger.error("通过Id查询系统系统参数数据出错！{}",id,e);
+			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;		
+	}
+	
+	@Override
+	public ResponseResult<SystemParamVo> getPageByVo(ViewSearchVo vo) {
+		ResponseResult<SystemParamVo> rspResult = new ResponseResult<SystemParamVo>();
+		try {
+			PageHelper.offsetPage(vo.getOffset(), vo.getPageSize());
+			List<SystemParamVo> list = systemParamMapper.getPageByVo(vo);
+			
+			if (Constants.ZERO == list.size()) {
+				return new ResponseResult<SystemParamVo>(ResultEnum.EMPTY);
+			}
+			PageInfo<SystemParamVo> page = new PageInfo<SystemParamVo>(list);
+			long total = page.getTotal();// 获取数据库中的总条数
+			if (Constants.ZERO == total) {
+				return new ResponseResult<SystemParamVo>(ResultEnum.EMPTY);
+			}
+
+			rspResult.setTotal(total);
+			rspResult.setRows(list);
+		} catch (Exception e) {
+			logger.error("分页查询系统参数数据出错", e);
+			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+
+//	@Override
+//	public ResponseResult<SystemParamVo> addSystemParam(SystemParamVo vo) {
+//		ResponseResult<SystemParamVo> rspResult = new ResponseResult<SystemParamVo>();
+//		try {
+//			SystemParamBean record = new SystemParamBean();
+//			PropertyUtils.copyProperties(record, vo);
+//			record.setCreateTime(new Date());
+//			record.setCreator(1L);//TODO 从同一方法中获取
+//			record.setUpdateTime(record.getCreateTime());
+//			record.setModifier(record.getCreator());
+//			systemParamMapper.insertSelective(record);
+//			// TODO 后期优化
+//			ParamBean param = new ParamBean();
+//			PropertyUtils.copyProperties(param, vo);
+//			ParamCacheUtil.updateCacheData(param);
+//			ParamInit.updateDictCacheData();
+//		} catch (Exception e) {
+//			logger.error("新增系统参数数据出错,{}",vo, e);
+//			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+//		}
+//		return rspResult;
+//	}
+	
+	@Override
+	public ResponseResult<SystemParamVo> addOrModifySystemParam(SystemParamVo vo) {
+		try {
+			SystemParamBean bean = new SystemParamBean();
+			PropertyUtils.copyProperties(bean, vo);
+			
+			int count = 0;
+			boolean flag = false;
+			SystemParamBean old = null;
+			if(bean.getId() == null){//新增
+				if(StringUtils.isNotBlank(ParamCacheUtil.get(bean.getOperatorId(),bean.getParamKey()))){
+					return new ResponseResult<SystemParamVo>(ResultEnum.DATA_REPEAT);
+				}
+				bean.setCreateTime(new Date());
+				bean.setCreator(vo.getUserId());
+				bean.setUpdateTime(bean.getCreateTime());
+				bean.setModifier(bean.getCreator());
+				count = systemParamMapper.insertSelective(bean);
+			} else {//更新
+//				old = systemParamMapper.selectByPrimaryKey(bean.getId());
+				//通过运营商ID跟ID查询数据  检验运营商操作
+				SystemParamBean queryBean = new SystemParamBean();
+				queryBean.setId(vo.getId());
+				queryBean.setOperatorId(vo.getOperatorId());
+				SystemParamBean isLegal = systemParamMapper.selectOne(queryBean);
+				old = isLegal;
+				if(isLegal != null){
+					//key存在冲突
+					if(StringUtils.isNotBlank(ParamCacheUtil.get(bean.getOperatorId(),bean.getParamKey())) && (old == null || old != null && !old.getId().equals(bean.getId()))){
+						return new ResponseResult<SystemParamVo>(ResultEnum.DATA_REPEAT);
+					}
+				
+					bean.setUpdateTime(new Date());
+					bean.setModifier(vo.getUserId());
+					count = systemParamMapper.updateByPrimaryKeySelective(bean);
+					flag = true;
+				}else{
+					return new ResponseResult<SystemParamVo>(ResultEnum.ILLEGAL_ACCESS);
+				}
+			}
+			if(count == 1){
+				//更改、key不存在冲突，删掉原来的key
+				if(flag && StringUtils.isBlank(ParamCacheUtil.get(bean.getOperatorId(),bean.getParamKey())) && old != null){
+					ParamCacheUtil.remove(old.getOperatorId(),old.getParamKey());
+				}
+				ParamBean param = new ParamBean();
+				PropertyUtils.copyProperties(param, bean);
+				//如果是生效的 更新缓存 如果是失效 不再添加到缓存
+				//生效 添加到缓存
+				if(vo.getStatus() == 1){
+					ParamCacheUtil.updateCacheData(param);
+				//失效 从缓存删除
+				}else{
+					ParamCacheUtil.remove(param);
+				}
+				return new ResponseResult<SystemParamVo>();
+			}else {
+				return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+			}
+		} catch (Exception e) {
+			logger.error("新增或更新系统参数数据出错,{}",vo, e);
+			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+		}
+	}
+
+//	@Override
+//	public ResponseResult<SystemParamVo> updateSystemParam(SystemParamVo vo) {
+//		ResponseResult<SystemParamVo> rspResult = new ResponseResult<SystemParamVo>();
+//		try {
+//			SystemParamBean record = new SystemParamBean();
+//			PropertyUtils.copyProperties(record, vo);
+//			record.setUpdateTime(new Date());
+//			record.setModifier(1L);//从同一方法中获取操作人ID
+//			systemParamMapper.updateByPrimaryKeySelective(record);
+//			
+//			ParamBean param = new ParamBean();
+//			PropertyUtils.copyProperties(param, vo);
+//			ParamCacheUtil.updateCacheData(param);
+//			ParamInit.updateDictCacheData();
+//		} catch (Exception e) {
+//			logger.error("更新系统参数数据出错，{}",vo, e);
+//			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+//		}
+//		return rspResult;
+//	}
+
+	@Override
+	public ResponseResult<SystemParamVo> effectSystemParam(SystemParamVo vo) {
+		ResponseResult<SystemParamVo> rspResult = new ResponseResult<SystemParamVo>();
+		try {
+			Integer status = vo.getStatus();
+			if(status == null){
+				return rspResult.setResponseResult(ResultEnum.ILLEGAL_PARAM);
+			}
+			SystemParamBean record = new SystemParamBean();
+			record.setId(vo.getId());
+			record.setStatus(vo.getStatus());
+			record.setUpdateTime(new Date());
+			record.setModifier(vo.getUserId());
+			int count = 0;
+			//通过运营商ID跟ID查询数据  检验运营商操作
+			SystemParamBean queryBean = new SystemParamBean();
+			queryBean.setId(vo.getId());
+			queryBean.setOperatorId(vo.getOperatorId());
+			SystemParamBean isLegal = systemParamMapper.selectOne(queryBean);
+			if(isLegal != null){
+				count = systemParamMapper.updateByPrimaryKeySelective(record);
+			}else{
+				return new ResponseResult<SystemParamVo>(ResultEnum.ILLEGAL_ACCESS);
+			}
+//			systemParamMapper.updateByPrimaryKeySelective(record);
+			if(count != 1){
+				return new ResponseResult<SystemParamVo>(ResultEnum.ILLEGAL_ACCESS);
+			}
+			//缓存操作
+//			record = systemParamMapper.selectByPrimaryKey(vo.getId());
+			record = isLegal;
+			ParamBean param = new ParamBean();
+			PropertyUtils.copyProperties(param, record);
+			//生效 添加到缓存
+			if(vo.getStatus() == 1){
+				ParamCacheUtil.updateCacheData(param);
+			//失效 从缓存删除
+			}else{
+				ParamCacheUtil.remove(param);
+			}
+		} catch (Exception e) {
+			logger.error("更新系统参数数据出错，{}",vo, e);
+			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+		}
+		return rspResult;
+	}
+	
+//	@Override
+//	public ResponseResult<SystemParamVo> modifyDelSystemParamById(String type, Long id) {
+//		try {
+//			int count = systemParamMapper.deleteByPrimaryKeyAndType(type, id);
+//			if(count == 0){
+//				return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+//			}else {
+//				DictCacheUtil.remove(DictCacheUtil.getDictOfIdByType(type, id));
+//				return new ResponseResult<SystemParamVo>(ResultEnum.SUCCESSE);
+//			}
+//		} catch (Exception e) {
+//			logger.error("", e);
+//			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//			return new ResponseResult<SystemParamVo>(ResultEnum.SYS_ERR);
+//		}
+//	}
+	
+	
+//	@Override
+//	public ResponseResult<List<Map<String,Object>>> getAllTypeMapList() {
+//		return new ResponseResult<List<Map<String,Object>>>(systemParamMapper.getAllTypeMapList());
+//	}
+		
+}

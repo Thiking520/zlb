@@ -1,0 +1,72 @@
+package com.zhilianbao.erp.auth.mapper.goods;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zhilianbao.erp.auth.entity.goods.GoodsSkuListBean;
+import com.zhilianbao.erp.auth.vo.goods.GoodsSkuListVo;
+import com.zhilianbao.erp.auth.vo.goods.GoodsVo;
+import com.zhilianbao.erp.auth.vo.goods.facade.ResGoodsSkuListVo;
+import com.zhilianbao.erp.common.mapper.BaseMapper;
+
+/**
+ * 商品和商品规格中间表
+ * @Company: 智联宝 
+ * @author ：chenll
+ * @date ：2017年3月30日 下午7:34:51
+ */
+public interface GoodsSkuListMapper extends BaseMapper<GoodsSkuListBean> {
+	
+	/**
+	 * 多规格商品：根据goodsId查询详情列表
+	 * @param vo
+	 * @return ：List<GoodsSkuListVo>
+	 * @author ：chenll
+	 * @date ：2017年3月30日 下午7:12:03
+	 */
+	List<GoodsSkuListVo> querySkuDetailsByGoodsId(GoodsSkuListVo vo);
+
+	/**
+	 * 批量删除
+	 * @param deleteIds ：void
+	 * @author ：chenll
+	 * @date ：2017年4月5日 下午4:43:36
+	 */
+	void deleteBatchByIds(@Param("deleteIds")Long[] deleteIds);
+	
+	/**
+	 * 根据id获取对象
+	 * @param vo
+	 * @return ：GoodsSkuListVo
+	 * @author ：chenll
+	 * @date ：2017年4月7日 下午2:35:20
+	 */
+	GoodsSkuListVo getById(GoodsSkuListVo vo);
+
+	/**
+	 * 根据运营商id获取多规格商品列表：电商平台需要调用的接口
+	 * @param searchVo
+	 * @return ：List<GoodsCollectionVo>
+	 * @author ：chenll
+	 * @date ：2017年5月25日 下午3:37:46
+	 */
+	List<ResGoodsSkuListVo> querSku(GoodsVo searchVo);
+	
+	/**
+	 * 根据goodsId获取多规格商品详情：电商平台需要调用的接口
+	 * @param searchVo
+	 * @return ：ResGoodsSkuListVo
+	 * @author ：chenll
+	 * @date ：2017年6月1日 下午3:20:19
+	 */
+	List<ResGoodsSkuListVo> querSkuDetail(GoodsVo searchVo);
+
+	/**
+	 * 修改转换率
+	 * @param goodsSkuListBean ：void
+	 * @author ：chenll
+	 * @date ：2017年6月16日 下午5:26:05
+	 */
+	void updateConversionRate(GoodsSkuListBean goodsSkuListBean);
+}
