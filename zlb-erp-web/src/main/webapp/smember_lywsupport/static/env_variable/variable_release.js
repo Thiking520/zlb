@@ -1,1 +1,0 @@
-var projectWebRoot = "http://www.luckshow.cn/";
